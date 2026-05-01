@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Any
 
+from config.settings import get_settings
 from core.anthropic import append_request_id, iter_provider_stream_error_sse_events
 from core.anthropic.native_sse_block_policy import (
     NativeSseBlockPolicyState,
@@ -49,12 +50,20 @@ class OpenRouterProvider(AnthropicMessagesTransport):
 
     def _request_headers(self) -> dict[str, str]:
         """Return OpenRouter's Anthropic-compatible messages headers."""
-        return {
+        headers = {
             "Accept": "text/event-stream",
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
             "anthropic-version": _ANTHROPIC_VERSION,
         }
+        settings = get_settings()
+        if settings.openrouter_app_url:
+            headers["HTTP-Referer"] = settings.openrouter_app_url
+        if settings.openrouter_app_title:
+            headers["X-OpenRouter-Title"] = settings.openrouter_app_title
+        if settings.openrouter_app_categories:
+            headers["X-OpenRouter-Categories"] = settings.openrouter_app_categories
+        return headers
 
     def _model_list_headers(self) -> dict[str, str]:
         """Return OpenRouter's OpenAI-compatible model-list headers."""
