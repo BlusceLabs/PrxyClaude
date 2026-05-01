@@ -85,7 +85,7 @@ Edit `.env` and choose one provider. For the default NVIDIA NIM path:
 ```dotenv
 NVIDIA_NIM_API_KEY="nvapi-your-key"
 MODEL="nvidia_nim/z-ai/glm4.7"
-ANTHROPIC_AUTH_TOKEN="freecc"
+ANTHROPIC_AUTH_TOKEN="proxycc"
 ```
 
 Use any local secret for `ANTHROPIC_AUTH_TOKEN`; Claude Code will send the same value back to this proxy. Leave it empty only for local/private testing.
@@ -113,13 +113,13 @@ Point `ANTHROPIC_BASE_URL` at the proxy root. Do not append `/v1`.
 PowerShell:
 
 ```powershell
-$env:ANTHROPIC_AUTH_TOKEN="freecc"; $env:ANTHROPIC_BASE_URL="http://localhost:8082"; claude
+$env:ANTHROPIC_AUTH_TOKEN="proxycc"; $env:ANTHROPIC_BASE_URL="http://localhost:8082"; claude
 ```
 
 Bash:
 
 ```bash
-ANTHROPIC_AUTH_TOKEN="freecc" ANTHROPIC_BASE_URL="http://localhost:8082" claude
+ANTHROPIC_AUTH_TOKEN="proxycc" ANTHROPIC_BASE_URL="http://localhost:8082" claude
 ```
 
 ## Choose A Provider
@@ -278,7 +278,7 @@ MODEL="nvidia_nim/z-ai/glm4.7"
 ### Claude Code CLI
 
 ```bash
-ANTHROPIC_AUTH_TOKEN="freecc" ANTHROPIC_BASE_URL="http://localhost:8082" claude
+ANTHROPIC_AUTH_TOKEN="proxycc" ANTHROPIC_BASE_URL="http://localhost:8082" claude
 ```
 
 ### VS Code Extension
