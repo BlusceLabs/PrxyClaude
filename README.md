@@ -7,7 +7,7 @@ Use Claude Code CLI, VS Code, JetBrains ACP, or chat bots through your own Anthr
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776ab.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json&style=for-the-badge)](https://github.com/astral-sh/uv)
-[![Tested with Pytest](https://img.shields.io/badge/testing-Pytest-00c0ff.svg?style=for-the-badge)](https://github.com/Alishahryar1/PxyClaude/actions/workflows/tests.yml)
+[![Tested with Pytest](https://img.shields.io/badge/testing-Pytest-00c0ff.svg?style=for-the-badge)](https://github.com/BlusceLabs/PxyClaude/actions/workflows/tests.yml)
 [![Type checking: Ty](https://img.shields.io/badge/type%20checking-ty-ffcc00.svg?style=for-the-badge)](https://pypi.org/project/ty/)
 [![Code style: Ruff](https://img.shields.io/badge/code%20formatting-ruff-f5a623.svg?style=for-the-badge)](https://github.com/astral-sh/ruff)
 [![Logging: Loguru](https://img.shields.io/badge/logging-loguru-4ecdc4.svg?style=for-the-badge)](https://github.com/Delgan/loguru)
@@ -25,11 +25,11 @@ PxyClaude routes Anthropic Messages API traffic from Claude Code to NVIDIA NIM, 
 ## Star History
 
 <div align="center">
-  <a href="https://star-history.com/#Alishahryar1/PxyClaude&Date">
+  <a href="https://star-history.com/#BlusceLabs/PxyClaude&Date">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Alishahryar1/PxyClaude&type=Date&theme=dark">
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Alishahryar1/PxyClaude&type=Date">
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Alishahryar1/PxyClaude&type=Date" width="700">
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=BlusceLabs/PxyClaude&type=Date&theme=dark">
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=BlusceLabs/PxyClaude&type=Date">
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=BlusceLabs/PxyClaude&type=Date" width="700">
     </picture>
   </a>
 </div>
@@ -69,7 +69,7 @@ uv python install 3.14
 ### 2. Clone And Configure
 
 ```bash
-git clone https://github.com/Alishahryar1/PxyClaude.git
+git clone https://github.com/BlusceLabs/PxyClaude.git
 cd PxyClaude
 cp .env.example .env
 ```
@@ -99,7 +99,7 @@ uv run uvicorn server:app --host 0.0.0.0 --port 8082
 Package install alternative:
 
 ```bash
-uv tool install git+https://github.com/Alishahryar1/PxyClaude.git
+uv tool install git+https://github.com/BlusceLabs/PxyClaude.git
 fcc-init
 PxyClaude
 ```
@@ -174,6 +174,22 @@ MODEL="open_router/stepfun/step-3.5-flash:free"
 ```
 
 Browse [all models](https://openrouter.ai/models) or [free models](https://openrouter.ai/collections/free-models).
+
+#### App Attribution
+
+Get your app featured in OpenRouter's [rankings](https://openrouter.ai/rankings) and access detailed analytics by setting attribution headers:
+
+```dotenv
+OPENROUTER_APP_URL="https://github.com/BlusceLabs/PxyClaude"
+OPENROUTER_APP_TITLE="PxyClaude"
+OPENROUTER_APP_CATEGORIES="cli-agent,cloud-agent"
+```
+
+- `OPENROUTER_APP_URL` (required) — Your app's URL; used as the primary identifier for rankings
+- `OPENROUTER_APP_TITLE` — Display name in rankings and analytics
+- `OPENROUTER_APP_CATEGORIES` — Comma-separated categories (see [OpenRouter docs](https://openrouter.ai/docs/app-attribution) for valid categories)
+
+Once configured, your app appears in public rankings and individual model pages. View your analytics at `https://openrouter.ai/apps?url=<your-app-url>`.
 
 </details>
 
@@ -545,7 +561,7 @@ Run them in that order before pushing. CI enforces the same checks.
 
 ## Contributing
 
-- Report bugs and feature requests in [Issues](https://github.com/Alishahryar1/PxyClaude/issues).
+- Report bugs and feature requests in [Issues](https://github.com/BlusceLabs/PxyClaude/issues).
 - Keep changes small and covered by focused tests.
 - Do not open Docker integration PRs.
 - Do not open README change PRs just open an issue for it.
