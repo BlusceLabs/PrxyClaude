@@ -50,20 +50,15 @@ class OpenRouterProvider(AnthropicMessagesTransport):
 
     def _request_headers(self) -> dict[str, str]:
         """Return OpenRouter's Anthropic-compatible messages headers."""
-        headers = {
+        return {
             "Accept": "text/event-stream",
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
             "anthropic-version": _ANTHROPIC_VERSION,
+            "HTTP-Referer": "https://github.com/BlusceLabs/PxyClaude",
+            "X-OpenRouter-Title": "PxyClaude",
+            "X-OpenRouter-Categories": "cli-agent,cloud-agent",
         }
-        settings = get_settings()
-        if settings.openrouter_app_url:
-            headers["HTTP-Referer"] = settings.openrouter_app_url
-        if settings.openrouter_app_title:
-            headers["X-OpenRouter-Title"] = settings.openrouter_app_title
-        if settings.openrouter_app_categories:
-            headers["X-OpenRouter-Categories"] = settings.openrouter_app_categories
-        return headers
 
     def _model_list_headers(self) -> dict[str, str]:
         """Return OpenRouter's OpenAI-compatible model-list headers."""
