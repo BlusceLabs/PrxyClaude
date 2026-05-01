@@ -294,6 +294,19 @@ def test_build_request_body_flattens_system_blocks(open_router_provider):
     assert body["system"] == "First system block.\n\nSecond system block."
 
 
+def test_request_headers_includes_app_attribution(open_router_provider):
+    """Test that OpenRouter attribution headers are sent with every request."""
+    headers = open_router_provider._request_headers()
+
+    assert headers["HTTP-Referer"] == "https://github.com/BlusceLabs/PxyClaude"
+    assert headers["X-OpenRouter-Title"] == "PxyClaude"
+    assert headers["X-OpenRouter-Categories"] == "cli-agent,cloud-agent"
+    assert headers["Authorization"] == "Bearer test_openrouter_key"
+    assert headers["anthropic-version"] == "2023-06-01"
+    assert headers["Accept"] == "text/event-stream"
+    assert headers["Content-Type"] == "application/json"
+
+
 @pytest.mark.asyncio
 async def test_stream_response_passes_native_sse_events(open_router_provider):
     req = MockRequest()

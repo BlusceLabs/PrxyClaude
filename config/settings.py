@@ -108,9 +108,6 @@ class Settings(BaseSettings):
 
     # ==================== OpenRouter Config ====================
     open_router_api_key: str = Field(default="", validation_alias="OPENROUTER_API_KEY")
-    openrouter_app_url: str = Field(default="", validation_alias="OPENROUTER_APP_URL")
-    openrouter_app_title: str = Field(default="", validation_alias="OPENROUTER_APP_TITLE")
-    openrouter_app_categories: str = Field(default="", validation_alias="OPENROUTER_APP_CATEGORIES")
 
     # ==================== DeepSeek Config ====================
     deepseek_api_key: str = Field(default="", validation_alias="DEEPSEEK_API_KEY")
