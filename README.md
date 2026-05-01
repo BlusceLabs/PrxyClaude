@@ -175,22 +175,6 @@ MODEL="open_router/stepfun/step-3.5-flash:free"
 
 Browse [all models](https://openrouter.ai/models) or [free models](https://openrouter.ai/collections/free-models).
 
-#### App Attribution
-
-Get your app featured in OpenRouter's [rankings](https://openrouter.ai/rankings) and access detailed analytics by setting attribution headers:
-
-```dotenv
-OPENROUTER_APP_URL="https://github.com/BlusceLabs/PxyClaude"
-OPENROUTER_APP_TITLE="PxyClaude"
-OPENROUTER_APP_CATEGORIES="cli-agent,cloud-agent"
-```
-
-- `OPENROUTER_APP_URL` (required) — Your app's URL; used as the primary identifier for rankings
-- `OPENROUTER_APP_TITLE` — Display name in rankings and analytics
-- `OPENROUTER_APP_CATEGORIES` — Comma-separated categories (see [OpenRouter docs](https://openrouter.ai/docs/app-attribution) for valid categories)
-
-Once configured, your app appears in public rankings and individual model pages. View your analytics at `https://openrouter.ai/apps?url=<your-app-url>`.
-
 </details>
 
 <details>
@@ -288,7 +272,7 @@ Open Settings, search for `claude-code.environmentVariables`, choose **Edit in s
 ```json
 "claudeCode.environmentVariables": [
   { "name": "ANTHROPIC_BASE_URL", "value": "http://localhost:8082" },
-  { "name": "ANTHROPIC_AUTH_TOKEN", "value": "freecc" }
+  { "name": "ANTHROPIC_AUTH_TOKEN", "value": "proxycc" }
 ]
 ```
 
