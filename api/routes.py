@@ -3,7 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from loguru import logger
 
-from config.provider_catalog import PROVIDER_DESCRIPTORS, SUPPORTED_PROVIDER_IDS
+from config.provider_catalog import SUPPORTED_PROVIDER_IDS
+from providers.registry import PROVIDER_DESCRIPTORS
 from config.settings import Settings
 from core.anthropic import get_token_count
 from providers.registry import ProviderRegistry
