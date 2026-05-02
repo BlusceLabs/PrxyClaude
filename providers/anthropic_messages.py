@@ -260,13 +260,19 @@ class AnthropicMessagesTransport(BaseProvider):
             return f"{base_message}\nRequest ID: {request_id}"
         return base_message
 
-    def _get_error_message(self, error: Exception, request_id: str | None) -> str:
+    def _get_error_message(
+        self, error: Exception, request_id: str | None, model: str | None = None
+    ) -> str:
         """Map an exception into a user-facing provider error message."""
-        mapped_error = map_error(error, rate_limiter=self._global_rate_limiter)
+        mapped_error = map_error(
+            error, rate_limiter=self._global_rate_limiter, model=model
+        )
         base_message = user_visible_message_for_mapped_provider_error(
             mapped_error,
             provider_name=self._provider_name,
             read_timeout_s=self._config.http_read_timeout,
+            rate_limiter=self._global_rate_limiter,
+            model=model,
         )
         return self._format_error_message(base_message, request_id)
 
@@ -385,7 +391,10 @@ class AnthropicMessagesTransport(BaseProvider):
             except Exception as error:
                 if not isinstance(error, httpx.HTTPStatusError):
                     self._log_stream_transport_error(tag, req_tag, error)
-                error_message = self._get_error_message(error, request_id)
+                model = getattr(request, "model", None)
+                error_message = self._get_error_message(
+                    error, request_id, model=model
+                )
 
                 if response is not None and not response.is_closed:
                     await response.aclose()

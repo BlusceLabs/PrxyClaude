@@ -7,10 +7,31 @@ import httpx
 import openai
 
 
+def _rate_limit_details(rate_limiter: Any, model: str | None) -> str:
+    """Build extra detail string for rate-limit errors."""
+    parts: list[str] = []
+    if rate_limiter is not None:
+        if model and hasattr(rate_limiter, "model_remaining_wait"):
+            wait = rate_limiter.model_remaining_wait(model)
+            if wait > 0:
+                parts.append(f" Model '{model}' blocked for {wait:.0f}s.")
+        if hasattr(rate_limiter, "remaining_wait"):
+            wait = rate_limiter.remaining_wait()
+            if wait > 0:
+                parts.append(f" Provider blocked for {wait:.0f}s.")
+        if hasattr(rate_limiter, "blocked_models"):
+            blocked = rate_limiter.blocked_models()
+            if blocked:
+                parts.append(f" Blocked models: {', '.join(blocked[:3])}.")
+    return "".join(parts)
+
+
 def get_user_facing_error_message(
     e: Exception,
     *,
     read_timeout_s: float | None = None,
+    rate_limiter: Any = None,
+    model: str | None = None,
 ) -> str:
     """Return a readable, non-empty error message for users.
 
@@ -30,7 +51,8 @@ def get_user_facing_error_message(
         return "Request timed out."
 
     if isinstance(e, openai.RateLimitError):
-        return "Provider rate limit reached. Please retry shortly."
+        details = _rate_limit_details(rate_limiter, model)
+        return f"Provider rate limit reached. Please retry shortly.{details}"
     if isinstance(e, openai.AuthenticationError):
         return "Provider authentication failed. Check API key."
     if isinstance(e, openai.BadRequestError):

@@ -342,11 +342,16 @@ class OpenAIChatTransport(BaseProvider):
                 raise
             except Exception as e:
                 self._log_stream_transport_error(tag, req_tag, e)
-                mapped_e = map_error(e, rate_limiter=self._global_rate_limiter)
+                model = getattr(request, "model", None)
+                mapped_e = map_error(
+                    e, rate_limiter=self._global_rate_limiter, model=model
+                )
                 base_message = user_visible_message_for_mapped_provider_error(
                     mapped_e,
                     provider_name=tag,
                     read_timeout_s=self._config.http_read_timeout,
+                    rate_limiter=self._global_rate_limiter,
+                    model=model,
                 )
                 error_message = append_request_id(base_message, request_id)
                 logger.info(

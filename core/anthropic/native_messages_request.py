@@ -190,11 +190,14 @@ def _apply_openrouter_reasoning_policy(body: dict[str, Any], thinking_cfg: Any) 
     if not isinstance(reasoning, dict):
         return
     reasoning.setdefault("enabled", True)
-    if not isinstance(thinking_cfg, dict):
-        return
-    budget_tokens = thinking_cfg.get("budget_tokens")
-    if isinstance(budget_tokens, int):
-        reasoning.setdefault("max_tokens", budget_tokens)
+    if isinstance(thinking_cfg, dict):
+        budget_tokens = thinking_cfg.get("budget_tokens")
+        if isinstance(budget_tokens, int):
+            reasoning.setdefault("max_tokens", budget_tokens)
+    # Ensure max_tokens is set for OpenRouter (required when reasoning is enabled)
+    if "max_tokens" not in reasoning:
+        max_tokens = body.get("max_tokens", 4096)
+        reasoning["max_tokens"] = min(max_tokens - 1000, 32000) if isinstance(max_tokens, int) else 32000
 
 
 def build_base_native_anthropic_request_body(
@@ -215,6 +218,11 @@ def build_base_native_anthropic_request_body(
             budget_tokens = thinking_cfg.get("budget_tokens")
             if isinstance(budget_tokens, int):
                 thinking_payload["budget_tokens"] = budget_tokens
+            else:
+                max_tokens = body.get("max_tokens")
+                thinking_payload["budget_tokens"] = (
+                    min(max_tokens - 1000, 32000) if isinstance(max_tokens, int) else 32000
+                )
             body["thinking"] = thinking_payload
 
     if "max_tokens" not in body:
@@ -262,4 +270,6 @@ def build_openrouter_native_request_body(
     if thinking_enabled:
         _apply_openrouter_reasoning_policy(body, thinking_cfg)
 
+    # Defensive: never send thinking to OpenRouter (it uses reasoning instead)
+    body.pop("thinking", None)
     return body

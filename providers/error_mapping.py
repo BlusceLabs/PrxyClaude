@@ -20,6 +20,8 @@ def user_visible_message_for_mapped_provider_error(
     *,
     provider_name: str,
     read_timeout_s: float | None,
+    rate_limiter: Any = None,
+    model: str | None = None,
 ) -> str:
     """Return the user-visible string after :func:`map_error` (405 + mapped types)."""
     if getattr(mapped, "status_code", None) == 405:
@@ -27,11 +29,13 @@ def user_visible_message_for_mapped_provider_error(
             f"Upstream provider {provider_name} rejected the request method "
             "or endpoint (HTTP 405)."
         )
-    return get_user_facing_error_message(mapped, read_timeout_s=read_timeout_s)
+    return get_user_facing_error_message(
+        mapped, read_timeout_s=read_timeout_s, rate_limiter=rate_limiter, model=model
+    )
 
 
 def map_error(
-    e: Exception, *, rate_limiter: GlobalRateLimiter | None = None
+    e: Exception, *, rate_limiter: GlobalRateLimiter | None = None, model: str | None = None
 ) -> Exception:
     """Map OpenAI or HTTPX exception to specific ProviderError.
 
@@ -45,7 +49,7 @@ def map_error(
     if isinstance(e, openai.AuthenticationError):
         return AuthenticationError(message, raw_error=str(e))
     if isinstance(e, openai.RateLimitError):
-        limiter.set_blocked(60)
+        limiter.set_blocked(60, model=model)
         return RateLimitError(message, raw_error=str(e))
     if isinstance(e, openai.BadRequestError):
         return InvalidRequestError(message, raw_error=str(e))
@@ -67,7 +71,7 @@ def map_error(
         if status in (401, 403):
             return AuthenticationError(message, raw_error=str(e))
         if status == 429:
-            limiter.set_blocked(60)
+            limiter.set_blocked(60, model=model)
             return RateLimitError(message, raw_error=str(e))
         if status == 400:
             return InvalidRequestError(message, raw_error=str(e))

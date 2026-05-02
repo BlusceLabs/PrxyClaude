@@ -369,7 +369,7 @@ class ProviderRegistry:
             )
 
     async def validate_configured_models(self, settings: Settings) -> None:
-        """Fail fast unless every configured chat model exists upstream."""
+        """Warn (not fail) unless every configured chat model exists upstream."""
         refs = settings.configured_chat_model_refs()
         refs_by_provider: dict[str, list[ConfiguredChatModelRef]] = defaultdict(list)
         for ref in refs:
@@ -378,6 +378,16 @@ class ProviderRegistry:
         failures: list[str] = []
         tasks: dict[str, asyncio.Task[frozenset[ProviderModelInfo]]] = {}
         for provider_id, provider_refs in refs_by_provider.items():
+            # Skip providers without API keys (check descriptor)
+            descriptor = PROVIDER_DESCRIPTORS.get(provider_id)
+            if descriptor and descriptor.credential_env:
+                credential = _credential_for(descriptor, settings)
+                if not credential or not credential.strip():
+                    logger.warning(
+                        "Skipping validation for provider={}: no API key configured",
+                        provider_id,
+                    )
+                    continue
             try:
                 provider = self.get(provider_id, settings)
             except Exception as exc:
@@ -412,7 +422,9 @@ class ProviderRegistry:
             message = "Configured model validation failed:\n" + "\n".join(
                 f"- {failure}" for failure in failures
             )
-            raise ServiceUnavailableError(message)
+            logger.warning(message)
+            # Don't raise - let the server start and fail later with specific errors
+            # raise ServiceUnavailableError(message)
 
         logger.info(
             "Configured provider models validated: models={} providers={}",

@@ -58,6 +58,7 @@ class GlobalRateLimiter:
             self._rate_limit, self._rate_window
         )
         self._blocked_until: float = 0
+        self._model_blocked_until: dict[str, float] = {}
         self._concurrency_sem = asyncio.Semaphore(max_concurrency)
         self._initialized = True
 
@@ -154,19 +155,39 @@ class GlobalRateLimiter:
         """
         await self._proactive_limiter.acquire()
 
-    def set_blocked(self, seconds: float = 60) -> None:
+    def set_blocked(self, seconds: float = 60, model: str | None = None) -> None:
         """
-        Set global block for specified seconds (reactive).
+        Set global or per-model block for specified seconds (reactive).
 
         Args:
             seconds: How long to block (default 60s)
+            model: If provided, block only this model (not the whole provider)
         """
-        self._blocked_until = time.monotonic() + seconds
-        logger.warning(f"Global provider rate limit set for {seconds:.1f}s (reactive)")
+        if model:
+            self._model_blocked_until[model] = time.monotonic() + seconds
+            logger.warning(f"Model '{model}' rate limited for {seconds:.1f}s (reactive)")
+        else:
+            self._blocked_until = time.monotonic() + seconds
+            logger.warning(f"Global provider rate limit set for {seconds:.1f}s (reactive)")
 
     def is_blocked(self) -> bool:
         """Check if currently reactively blocked."""
         return time.monotonic() < self._blocked_until
+
+    def is_model_blocked(self, model: str) -> bool:
+        """Check if a specific model is reactively blocked."""
+        until = self._model_blocked_until.get(model, 0)
+        return time.monotonic() < until
+
+    def model_remaining_wait(self, model: str) -> float:
+        """Get remaining reactive wait time for a specific model in seconds."""
+        until = self._model_blocked_until.get(model, 0)
+        return max(0.0, until - time.monotonic())
+
+    def blocked_models(self) -> list[str]:
+        """Return list of currently blocked models."""
+        now = time.monotonic()
+        return [m for m, until in self._model_blocked_until.items() if now < until]
 
     def matches_config(
         self, rate_limit: int, rate_window: float, max_concurrency: int
