@@ -123,6 +123,14 @@ def build_provider_config(
         settings, descriptor.base_url_attr, descriptor.default_base_url or ""
     )
     proxy = _string_attr(settings, descriptor.proxy_attr)
+    # OpenRouter-specific cache settings
+    cache_enabled = False
+    cache_ttl_seconds = None
+    cache_clear = False
+    if descriptor.provider_id == "open_router":
+        cache_enabled = settings.open_router_cache_enabled
+        cache_ttl_seconds = settings.open_router_cache_ttl_seconds
+        cache_clear = settings.open_router_cache_clear
     return ProviderConfig(
         api_key=credential,
         base_url=base_url or descriptor.default_base_url,
@@ -136,6 +144,9 @@ def build_provider_config(
         proxy=proxy,
         log_raw_sse_events=settings.log_raw_sse_events,
         log_api_error_tracebacks=settings.log_api_error_tracebacks,
+        cache_enabled=cache_enabled,
+        cache_ttl_seconds=cache_ttl_seconds,
+        cache_clear=cache_clear,
     )
 
 
@@ -378,9 +389,9 @@ class ProviderRegistry:
         failures: list[str] = []
         tasks: dict[str, asyncio.Task[frozenset[ProviderModelInfo]]] = {}
         for provider_id, provider_refs in refs_by_provider.items():
-            # Skip providers without API keys (check descriptor)
+            # Skip providers without API keys (check descriptor), unless already cached
             descriptor = PROVIDER_DESCRIPTORS.get(provider_id)
-            if descriptor and descriptor.credential_env:
+            if descriptor and descriptor.credential_env and provider_id not in self._providers:
                 credential = _credential_for(descriptor, settings)
                 if not credential or not credential.strip():
                     logger.warning(
@@ -423,8 +434,7 @@ class ProviderRegistry:
                 f"- {failure}" for failure in failures
             )
             logger.warning(message)
-            # Don't raise - let the server start and fail later with specific errors
-            # raise ServiceUnavailableError(message)
+            raise ServiceUnavailableError(message)
 
         logger.info(
             "Configured provider models validated: models={} providers={}",

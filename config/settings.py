@@ -108,6 +108,16 @@ class Settings(BaseSettings):
 
     # ==================== OpenRouter Config ====================
     open_router_api_key: str = Field(default="", validation_alias="OPENROUTER_API_KEY")
+    # Response caching (OpenRouter-specific)
+    open_router_cache_enabled: bool = Field(
+        default=False, validation_alias="OPENROUTER_CACHE_ENABLED"
+    )
+    open_router_cache_ttl_seconds: int | None = Field(
+        default=None, validation_alias="OPENROUTER_CACHE_TTL_SECONDS"
+    )
+    open_router_cache_clear: bool = Field(
+        default=False, validation_alias="OPENROUTER_CACHE_CLEAR"
+    )
 
     # ==================== DeepSeek Config ====================
     deepseek_api_key: str = Field(default="", validation_alias="DEEPSEEK_API_KEY")
@@ -319,6 +329,13 @@ class Settings(BaseSettings):
     def parse_optional_str(cls, v: Any) -> Any:
         if v == "":
             return None
+        return v
+
+    @field_validator("enable_model_thinking", mode="before")
+    @classmethod
+    def parse_enable_model_thinking(cls, v: Any) -> Any:
+        if v == "":
+            return True
         return v
 
     @field_validator("max_message_log_entries_per_chat", mode="before")

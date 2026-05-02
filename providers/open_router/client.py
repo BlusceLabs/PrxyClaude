@@ -50,7 +50,7 @@ class OpenRouterProvider(AnthropicMessagesTransport):
 
     def _request_headers(self) -> dict[str, str]:
         """Return OpenRouter's Anthropic-compatible messages headers."""
-        return {
+        headers = {
             "Accept": "text/event-stream",
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
@@ -59,6 +59,14 @@ class OpenRouterProvider(AnthropicMessagesTransport):
             "X-OpenRouter-Title": "PxyClaude",
             "X-OpenRouter-Categories": "cli-agent,cloud-agent",
         }
+        # Add response caching headers if enabled
+        if self._config.cache_enabled:
+            headers["X-OpenRouter-Cache"] = "true"
+        if self._config.cache_clear:
+            headers["X-OpenRouter-Cache-Clear"] = "true"
+        if self._config.cache_ttl_seconds is not None:
+            headers["X-OpenRouter-Cache-TTL"] = str(self._config.cache_ttl_seconds)
+        return headers
 
     def _model_list_headers(self) -> dict[str, str]:
         """Return OpenRouter's OpenAI-compatible model-list headers."""
