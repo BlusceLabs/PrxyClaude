@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from loguru import logger
 
+from config.provider_catalog import PROVIDER_DESCRIPTORS, SUPPORTED_PROVIDER_IDS
 from config.settings import Settings
 from core.anthropic import get_token_count
 from providers.registry import ProviderRegistry
@@ -213,9 +214,40 @@ async def probe_root(_auth=Depends(require_api_key)):
 
 
 @router.get("/health")
-async def health():
-    """Health check endpoint."""
-    return {"status": "healthy"}
+async def health(request: Request, settings: Settings = Depends(get_settings)):
+    """Health check endpoint with provider status and usage."""
+    result: dict = {"status": "healthy", "providers": {}}
+
+    # Provider status
+    registry = getattr(request.app.state, "provider_registry", None)
+    for pid in SUPPORTED_PROVIDER_IDS:
+        info: dict = {"configured": False, "rate_limited": False}
+        descriptor = PROVIDER_DESCRIPTORS.get(pid)
+        if descriptor and descriptor.credential_env:
+            env_value = getattr(settings, descriptor.credential_env.lower(), "")
+            info["configured"] = bool(env_value and str(env_value).strip())
+
+        if registry and hasattr(registry, "_providers") and pid in registry._providers:
+            provider = registry._providers[pid]
+            if hasattr(provider, "_global_rate_limiter"):
+                limiter = provider._global_rate_limiter
+                info["rate_limited"] = limiter.is_blocked()
+                if limiter.is_blocked():
+                    info["rate_limit_remaining_s"] = round(limiter.remaining_wait(), 1)
+                blocked = limiter.blocked_models()
+                if blocked:
+                    info["blocked_models"] = blocked[:5]
+
+        result["providers"][pid] = info
+
+    # Usage summary
+    try:
+        from core.usage_tracker import get_total_usage
+        result["usage"] = get_total_usage()
+    except Exception:
+        pass
+
+    return result
 
 
 @router.api_route("/health", methods=["HEAD", "OPTIONS"])
@@ -252,3 +284,16 @@ async def stop_cli(request: Request, _auth=Depends(require_api_key)):
     count = await handler.stop_all_tasks()
     logger.info("STOP_CLI: source=handler cancelled_count={}", count)
     return {"status": "stopped", "cancelled_count": count}
+
+
+@router.get("/usage")
+async def usage(since_hours: int = 24):
+    """Return detailed usage statistics for the last N hours."""
+    try:
+        from core.usage_tracker import get_usage_summary, get_total_usage
+        return {
+            "total": get_total_usage(),
+            "by_provider": get_usage_summary(since_hours=since_hours),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

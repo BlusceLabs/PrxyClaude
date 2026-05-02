@@ -14,6 +14,7 @@ from config.constants import (
 )
 from core.anthropic import iter_provider_stream_error_sse_events
 from core.anthropic.emitted_sse_tracker import EmittedNativeSseTracker
+from core.usage_tracker import log_usage
 from core.anthropic.native_messages_request import (
     build_base_native_anthropic_request_body,
 )
@@ -427,3 +428,11 @@ class AnthropicMessagesTransport(BaseProvider):
             finally:
                 if response is not None and not response.is_closed:
                     await response.aclose()
+                if sent_any_event:
+                    log_usage(
+                        provider=tag,
+                        model=body.get("model", "unknown"),
+                        input_tokens=input_tokens,
+                        output_tokens=None,
+                        request_id=request_id,
+                    )

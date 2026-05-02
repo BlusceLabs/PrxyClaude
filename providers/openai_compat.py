@@ -23,6 +23,7 @@ from core.anthropic import (
     append_request_id,
     map_stop_reason,
 )
+from core.usage_tracker import log_usage
 from providers.base import BaseProvider, ProviderConfig
 from providers.error_mapping import (
     map_error,
@@ -438,5 +439,13 @@ class OpenAIChatTransport(BaseProvider):
                     provider_input,
                     provider_input - input_tokens,
                 )
+        if usage_info or output_tokens > 0:
+            log_usage(
+                provider=tag,
+                model=body.get("model", "unknown"),
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                request_id=request_id,
+            )
         yield sse.message_delta(map_stop_reason(finish_reason), output_tokens)
         yield sse.message_stop()
