@@ -1,6 +1,5 @@
 """Provider-specific exception mapping."""
 
-import aiohttp
 import httpx
 import openai
 
@@ -20,8 +19,6 @@ def user_visible_message_for_mapped_provider_error(
     *,
     provider_name: str,
     read_timeout_s: float | None,
-    rate_limiter: Any = None,
-    model: str | None = None,
 ) -> str:
     """Return the user-visible string after :func:`map_error` (405 + mapped types)."""
     if getattr(mapped, "status_code", None) == 405:
@@ -29,13 +26,11 @@ def user_visible_message_for_mapped_provider_error(
             f"Upstream provider {provider_name} rejected the request method "
             "or endpoint (HTTP 405)."
         )
-    return get_user_facing_error_message(
-        mapped, read_timeout_s=read_timeout_s, rate_limiter=rate_limiter, model=model
-    )
+    return get_user_facing_error_message(mapped, read_timeout_s=read_timeout_s)
 
 
 def map_error(
-    e: Exception, *, rate_limiter: GlobalRateLimiter | None = None, model: str | None = None
+    e: Exception, *, rate_limiter: GlobalRateLimiter | None = None
 ) -> Exception:
     """Map OpenAI or HTTPX exception to specific ProviderError.
 
@@ -63,11 +58,8 @@ def map_error(
             message, status_code=getattr(e, "status_code", 500), raw_error=str(e)
         )
 
-    if isinstance(e, (httpx.HTTPStatusError, aiohttp.ClientResponseError)):
-        if isinstance(e, httpx.HTTPStatusError):
-            status = e.response.status_code
-        else:
-            status = e.status
+    if isinstance(e, httpx.HTTPStatusError):
+        status = e.response.status_code
         if status in (401, 403):
             return AuthenticationError(message, raw_error=str(e))
         if status == 429:

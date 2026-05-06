@@ -7,7 +7,6 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable, MutableMapping
 from contextlib import suppress
 
-import aiohttp
 import httpx
 from loguru import logger
 
@@ -69,6 +68,12 @@ def _create_ollama(config: ProviderConfig, _settings: Settings) -> BaseProvider:
     return OllamaProvider(config)
 
 
+def _create_kimi(config: ProviderConfig, _settings: Settings) -> BaseProvider:
+    from providers.kimi import KimiProvider
+
+    return KimiProvider(config)
+
+
 PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "nvidia_nim": _create_nvidia_nim,
     "open_router": _create_open_router,
@@ -76,6 +81,7 @@ PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "lmstudio": _create_lmstudio,
     "llamacpp": _create_llamacpp,
     "ollama": _create_ollama,
+    "kimi": _create_kimi,
 }
 
 if set(PROVIDER_DESCRIPTORS) != set(SUPPORTED_PROVIDER_IDS) or set(
@@ -123,14 +129,6 @@ def build_provider_config(
         settings, descriptor.base_url_attr, descriptor.default_base_url or ""
     )
     proxy = _string_attr(settings, descriptor.proxy_attr)
-    # OpenRouter-specific cache settings
-    cache_enabled = False
-    cache_ttl_seconds = None
-    cache_clear = False
-    if descriptor.provider_id == "open_router":
-        cache_enabled = settings.open_router_cache_enabled
-        cache_ttl_seconds = settings.open_router_cache_ttl_seconds
-        cache_clear = settings.open_router_cache_clear
     return ProviderConfig(
         api_key=credential,
         base_url=base_url or descriptor.default_base_url,
@@ -144,9 +142,6 @@ def build_provider_config(
         proxy=proxy,
         log_raw_sse_events=settings.log_raw_sse_events,
         log_api_error_tracebacks=settings.log_api_error_tracebacks,
-        cache_enabled=cache_enabled,
-        cache_ttl_seconds=cache_ttl_seconds,
-        cache_clear=cache_clear,
     )
 
 
@@ -191,12 +186,8 @@ def _provider_query_failure_reason(
 ) -> str:
     if isinstance(exc, ModelListResponseError):
         return f"malformed model-list response: {exc.message}"
-    if isinstance(exc, (httpx.HTTPStatusError, aiohttp.ClientResponseError)):
-        if isinstance(exc, httpx.HTTPStatusError):
-            status = exc.response.status_code
-        else:
-            status = exc.status
-        return f"query failure: HTTP {status}"
+    if isinstance(exc, httpx.HTTPStatusError):
+        return f"query failure: HTTP {exc.response.status_code}"
     if isinstance(exc, AuthenticationError):
         return f"query failure: {exc.message}"
     if isinstance(exc, ProviderError) and settings.log_api_error_tracebacks:
@@ -380,7 +371,7 @@ class ProviderRegistry:
             )
 
     async def validate_configured_models(self, settings: Settings) -> None:
-        """Warn (not fail) unless every configured chat model exists upstream."""
+        """Fail fast unless every configured chat model exists upstream."""
         refs = settings.configured_chat_model_refs()
         refs_by_provider: dict[str, list[ConfiguredChatModelRef]] = defaultdict(list)
         for ref in refs:
@@ -389,16 +380,6 @@ class ProviderRegistry:
         failures: list[str] = []
         tasks: dict[str, asyncio.Task[frozenset[ProviderModelInfo]]] = {}
         for provider_id, provider_refs in refs_by_provider.items():
-            # Skip providers without API keys (check descriptor), unless already cached
-            descriptor = PROVIDER_DESCRIPTORS.get(provider_id)
-            if descriptor and descriptor.credential_env and provider_id not in self._providers:
-                credential = _credential_for(descriptor, settings)
-                if not credential or not credential.strip():
-                    logger.warning(
-                        "Skipping validation for provider={}: no API key configured",
-                        provider_id,
-                    )
-                    continue
             try:
                 provider = self.get(provider_id, settings)
             except Exception as exc:
@@ -433,7 +414,6 @@ class ProviderRegistry:
             message = "Configured model validation failed:\n" + "\n".join(
                 f"- {failure}" for failure in failures
             )
-            logger.warning(message)
             raise ServiceUnavailableError(message)
 
         logger.info(

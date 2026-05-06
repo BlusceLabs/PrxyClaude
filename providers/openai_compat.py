@@ -5,13 +5,13 @@ in separate modules; do not list them as subclasses of this class.
 """
 
 import asyncio
+import json
 import uuid
 from abc import abstractmethod
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
 import httpx
-import orjson as json
 from loguru import logger
 from openai import AsyncOpenAI
 
@@ -23,7 +23,6 @@ from core.anthropic import (
     append_request_id,
     map_stop_reason,
 )
-from core.usage_tracker import log_usage
 from providers.base import BaseProvider, ProviderConfig
 from providers.error_mapping import (
     map_error,
@@ -52,7 +51,7 @@ def _iter_heuristic_tool_use_sse(
     yield sse.content_block_delta(
         block_idx,
         "input_json_delta",
-        json.dumps(tool_use["input"]).decode("utf-8"),
+        json.dumps(tool_use["input"]),
     )
     yield sse.content_block_stop(block_idx)
 
@@ -158,7 +157,7 @@ class OpenAIChatTransport(BaseProvider):
         if state.name == "Task":
             parsed = sse.blocks.buffer_task_args(tc_index, args)
             if parsed is not None:
-                yield sse.emit_tool_delta(tc_index, json.dumps(parsed).decode("utf-8"))
+                yield sse.emit_tool_delta(tc_index, json.dumps(parsed))
             return
         yield sse.emit_tool_delta(tc_index, args)
 
@@ -343,16 +342,11 @@ class OpenAIChatTransport(BaseProvider):
                 raise
             except Exception as e:
                 self._log_stream_transport_error(tag, req_tag, e)
-                model = getattr(request, "model", None)
-                mapped_e = map_error(
-                    e, rate_limiter=self._global_rate_limiter, model=model
-                )
+                mapped_e = map_error(e, rate_limiter=self._global_rate_limiter)
                 base_message = user_visible_message_for_mapped_provider_error(
                     mapped_e,
                     provider_name=tag,
                     read_timeout_s=self._config.http_read_timeout,
-                    rate_limiter=self._global_rate_limiter,
-                    model=model,
                 )
                 error_message = append_request_id(base_message, request_id)
                 logger.info(
@@ -439,13 +433,5 @@ class OpenAIChatTransport(BaseProvider):
                     provider_input,
                     provider_input - input_tokens,
                 )
-        if usage_info or output_tokens > 0:
-            log_usage(
-                provider=tag,
-                model=body.get("model", "unknown"),
-                input_tokens=input_tokens,
-                output_tokens=output_tokens,
-                request_id=request_id,
-            )
         yield sse.message_delta(map_stop_reason(finish_reason), output_tokens)
         yield sse.message_stop()

@@ -1,11 +1,11 @@
 """Heuristic parser for text-emitted tool calls."""
 
+import json
 import re
 import uuid
 from enum import Enum
 from typing import Any
 
-import orjson as json
 from loguru import logger
 
 _CONTROL_TOKEN_RE = re.compile(r"<\|[^|>]{1,80}\|>")
@@ -49,7 +49,7 @@ class HeuristicToolParser:
         for match in self._WEB_TOOL_JSON_PATTERN.finditer(self._buffer):
             try:
                 tool_input = json.loads(match.group("json"))
-            except ValueError:
+            except json.JSONDecodeError:
                 continue
             if not isinstance(tool_input, dict):
                 continue

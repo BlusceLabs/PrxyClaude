@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Any
 
-from config.settings import get_settings
 from core.anthropic import append_request_id, iter_provider_stream_error_sse_events
 from core.anthropic.native_sse_block_policy import (
     NativeSseBlockPolicyState,
@@ -50,23 +49,12 @@ class OpenRouterProvider(AnthropicMessagesTransport):
 
     def _request_headers(self) -> dict[str, str]:
         """Return OpenRouter's Anthropic-compatible messages headers."""
-        headers = {
+        return {
             "Accept": "text/event-stream",
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
             "anthropic-version": _ANTHROPIC_VERSION,
-            "HTTP-Referer": "https://github.com/BlusceLabs/PxyClaude",
-            "X-OpenRouter-Title": "PxyClaude",
-            "X-OpenRouter-Categories": "cli-agent,cloud-agent",
         }
-        # Add response caching headers if enabled
-        if self._config.cache_enabled:
-            headers["X-OpenRouter-Cache"] = "true"
-        if self._config.cache_clear:
-            headers["X-OpenRouter-Cache-Clear"] = "true"
-        if self._config.cache_ttl_seconds is not None:
-            headers["X-OpenRouter-Cache-TTL"] = str(self._config.cache_ttl_seconds)
-        return headers
 
     def _model_list_headers(self) -> dict[str, str]:
         """Return OpenRouter's OpenAI-compatible model-list headers."""

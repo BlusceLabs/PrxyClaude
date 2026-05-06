@@ -399,10 +399,19 @@ async def test_cleanup_provider_cleans_all():
     with patch("api.dependencies.get_settings") as mock_settings:
         mock_settings.return_value = _make_mock_settings()
 
-        # Mock ProviderRegistry.cleanup() to avoid actual provider cleanup
-        with patch.object(ProviderRegistry, "cleanup", new_callable=AsyncMock) as mock_reg_cleanup:
-            await cleanup_provider()
-            mock_reg_cleanup.assert_called_once()
+        nim = get_provider_for_type("nvidia_nim")
+        lmstudio = get_provider_for_type("lmstudio")
+
+        assert isinstance(nim, NvidiaNimProvider)
+        assert isinstance(lmstudio, LMStudioProvider)
+
+        nim._client = AsyncMock()
+        lmstudio._client = AsyncMock()
+
+        await cleanup_provider()
+
+        nim._client.aclose.assert_called_once()
+        lmstudio._client.aclose.assert_called_once()
 
 
 def test_resolve_provider_per_app_uses_separate_registries() -> None:

@@ -1,10 +1,10 @@
 """SSE event builder for Anthropic-format streaming responses."""
 
 import hashlib
+import json
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 
-import orjson as json
 from loguru import logger
 
 try:
@@ -44,7 +44,7 @@ def _safe_usage_int(value: object) -> int:
 
 def format_sse_event(event_type: str, data: dict) -> str:
     """Format one Anthropic-style SSE event (no logging)."""
-    return f"event: {event_type}\ndata: {json.dumps(data).decode('utf-8')}\n\n"
+    return f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
 
 
 @dataclass
@@ -139,8 +139,8 @@ class ContentBlockManager:
             try:
                 args_json = json.loads(state.task_arg_buffer)
                 _normalize_task_run_in_background(args_json)
-                out = json.dumps(args_json).decode("utf-8")
-            except (ValueError, TypeError) as e:
+                out = json.dumps(args_json)
+            except (json.JSONDecodeError, TypeError, ValueError) as e:
                 digest = hashlib.sha256(
                     state.task_arg_buffer.encode("utf-8", errors="replace")
                 ).hexdigest()[:16]

@@ -39,11 +39,8 @@ class ModelRouter:
 
     def __init__(self, settings: Settings):
         self._settings = settings
-        self._resolve_cache: dict[str, ResolvedModel] = {}
 
     def resolve(self, claude_model_name: str) -> ResolvedModel:
-        if claude_model_name in self._resolve_cache:
-            return self._resolve_cache[claude_model_name]
         (
             direct_provider_id,
             direct_provider_model,
@@ -62,15 +59,13 @@ class ModelRouter:
                 direct_provider_model,
                 thinking_enabled,
             )
-            result = ResolvedModel(
+            return ResolvedModel(
                 original_model=claude_model_name,
                 provider_id=direct_provider_id,
                 provider_model=direct_provider_model,
                 provider_model_ref=claude_model_name,
                 thinking_enabled=thinking_enabled,
             )
-            self._resolve_cache[claude_model_name] = result
-            return result
 
         provider_model_ref = self._settings.resolve_model(claude_model_name)
         thinking_enabled = self._settings.resolve_thinking(claude_model_name)
@@ -80,15 +75,13 @@ class ModelRouter:
             logger.debug(
                 "MODEL MAPPING: '{}' -> '{}'", claude_model_name, provider_model
             )
-        result = ResolvedModel(
+        return ResolvedModel(
             original_model=claude_model_name,
             provider_id=provider_id,
             provider_model=provider_model,
             provider_model_ref=provider_model_ref,
             thinking_enabled=thinking_enabled,
         )
-        self._resolve_cache[claude_model_name] = result
-        return result
 
     def _direct_provider_model(
         self, model_name: str

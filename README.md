@@ -1,43 +1,45 @@
 <div align="center">
 
-# 🤖 PxyClaude
+# 🤖 Free Claude Code
 
 Use Claude Code CLI, VS Code, JetBrains ACP, or chat bots through your own Anthropic-compatible proxy.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776ab.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json&style=for-the-badge)](https://github.com/astral-sh/uv)
-[![Tested with Pytest](https://img.shields.io/badge/testing-Pytest-00c0ff.svg?style=for-the-badge)](https://github.com/BlusceLabs/PxyClaude/actions/workflows/tests.yml)
+[![Tested with Pytest](https://img.shields.io/badge/testing-Pytest-00c0ff.svg?style=for-the-badge)](https://github.com/Alishahryar1/free-claude-code/actions/workflows/tests.yml)
 [![Type checking: Ty](https://img.shields.io/badge/type%20checking-ty-ffcc00.svg?style=for-the-badge)](https://pypi.org/project/ty/)
 [![Code style: Ruff](https://img.shields.io/badge/code%20formatting-ruff-f5a623.svg?style=for-the-badge)](https://github.com/astral-sh/ruff)
 [![Logging: Loguru](https://img.shields.io/badge/logging-loguru-4ecdc4.svg?style=for-the-badge)](https://github.com/Delgan/loguru)
 
-PxyClaude routes Anthropic Messages API traffic from Claude Code to NVIDIA NIM, OpenRouter, DeepSeek, LM Studio, llama.cpp, or Ollama. It keeps Claude Code's client-side protocol stable while letting you choose free, paid, or local models.
+Free Claude Code routes Anthropic Messages API traffic from Claude Code to NVIDIA NIM, OpenRouter, DeepSeek, LM Studio, llama.cpp, or Ollama. It keeps Claude Code's client-side protocol stable while letting you choose free, paid, or local models.
 
 [Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-claude-code) · [Troubleshooting](#troubleshooting) · [Development](#development)
 
 </div>
 
 <div align="center">
-  <img src="pic.png" alt="PxyClaude in action" width="700">
+  <img src="pic.png" alt="Free Claude Code in action" width="700">
 </div>
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=BlusceLabs%2FPxyClaude&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=BlusceLabs/PxyClaude&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=BlusceLabs/PxyClaude&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=BlusceLabs/PxyClaude&type=date&legend=top-left" />
- </picture>
-</a>
+<div align="center">
+  <a href="https://star-history.com/#Alishahryar1/free-claude-code&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Alishahryar1/free-claude-code&type=Date&theme=dark">
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Alishahryar1/free-claude-code&type=Date">
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Alishahryar1/free-claude-code&type=Date" width="700">
+    </picture>
+  </a>
+</div>
 
 ## What You Get
 
 - Drop-in proxy for Claude Code's Anthropic API calls.
 - Six provider backends: NVIDIA NIM, OpenRouter, DeepSeek, LM Studio, llama.cpp, and Ollama.
 - Per-model routing: send Opus, Sonnet, Haiku, and fallback traffic to different providers.
-- Native Claude Code `/model` picker support through the proxy's `/v1/models` endpoint.
+- Native Claude Code `/model` picker support through the proxy's `/v1/models` endpoint (Claude Code must opt in to Gateway model discovery; see [Model Picker](#model-picker)).
 - Streaming, tool use, reasoning/thinking block handling, and local request optimizations.
 - Optional Discord or Telegram bot wrapper for remote coding sessions.
 - Optional voice-note transcription through local Whisper or NVIDIA NIM.
@@ -67,15 +69,9 @@ uv python install 3.14
 ### 2. Clone And Configure
 
 ```bash
-git clone https://github.com/BlusceLabs/PxyClaude.git
-cd PxyClaude
+git clone https://github.com/Alishahryar1/free-claude-code.git
+cd free-claude-code
 cp .env.example .env
-```
-
-PowerShell uses:
-
-```powershell
-Copy-Item .env.example .env
 ```
 
 Edit `.env` and choose one provider. For the default NVIDIA NIM path:
@@ -83,7 +79,7 @@ Edit `.env` and choose one provider. For the default NVIDIA NIM path:
 ```dotenv
 NVIDIA_NIM_API_KEY="nvapi-your-key"
 MODEL="nvidia_nim/z-ai/glm4.7"
-ANTHROPIC_AUTH_TOKEN="proxycc"
+ANTHROPIC_AUTH_TOKEN="freecc"
 ```
 
 Use any local secret for `ANTHROPIC_AUTH_TOKEN`; Claude Code will send the same value back to this proxy. Leave it empty only for local/private testing.
@@ -97,27 +93,27 @@ uv run uvicorn server:app --host 0.0.0.0 --port 8082
 Package install alternative:
 
 ```bash
-uv tool install git+https://github.com/BlusceLabs/PxyClaude.git
+uv tool install git+https://github.com/Alishahryar1/free-claude-code.git
 fcc-init
-PxyClaude
+free-claude-code
 ```
 
-`fcc-init` creates `~/.config/PxyClaude/.env` from the bundled template.
+`fcc-init` creates `~/.config/free-claude-code/.env` from the bundled template.
 
 ### 4. Run Claude Code
 
-Point `ANTHROPIC_BASE_URL` at the proxy root. Do not append `/v1`.
+Point `ANTHROPIC_BASE_URL` at the proxy root. Do not append `/v1`. Set `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` if you use `/model` to list models from this proxy (see [Model Picker](#model-picker)).
 
 PowerShell:
 
 ```powershell
-$env:ANTHROPIC_AUTH_TOKEN="proxycc"; $env:ANTHROPIC_BASE_URL="http://localhost:8082"; claude
+$env:ANTHROPIC_AUTH_TOKEN="freecc"; $env:ANTHROPIC_BASE_URL="http://localhost:8082"; $env:CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="1"; claude
 ```
 
 Bash:
 
 ```bash
-ANTHROPIC_AUTH_TOKEN="proxycc" ANTHROPIC_BASE_URL="http://localhost:8082" claude
+ANTHROPIC_AUTH_TOKEN="freecc" ANTHROPIC_BASE_URL="http://localhost:8082" CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 claude
 ```
 
 ## Choose A Provider
@@ -133,11 +129,13 @@ provider_id/model/name
 | Provider | Prefix | Transport | Key | Default base URL |
 | --- | --- | --- | --- | --- |
 | <img src="https://cdn.simpleicons.org/nvidia/76B900" alt="" width="18" height="18"> NVIDIA NIM | `nvidia_nim/...` | OpenAI chat translation | `NVIDIA_NIM_API_KEY` | `https://integrate.api.nvidia.com/v1` |
+| <img src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-avatar/avatars/kimi.webp" alt="" width="18" height="18"> Kimi | `kimi/...` | OpenAI chat translation | `KIMI_API_KEY` | `https://api.moonshot.ai/v1` |
 | <img src="https://cdn.simpleicons.org/openrouter/6C47FF" alt="" width="18" height="18"> OpenRouter | `open_router/...` | Anthropic Messages | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` |
 | <img src="https://cdn.simpleicons.org/deepseek/4D6BFF" alt="" width="18" height="18"> DeepSeek | `deepseek/...` | Anthropic Messages | `DEEPSEEK_API_KEY` | `https://api.deepseek.com/anthropic` |
 | <img src="https://github.com/lmstudio-ai.png?size=64" alt="" width="18" height="18"> LM Studio | `lmstudio/...` | Anthropic Messages | none | `http://localhost:1234/v1` |
 | <img src="https://github.com/ggml-org.png?size=64" alt="" width="18" height="18"> llama.cpp | `llamacpp/...` | Anthropic Messages | none | `http://localhost:8080/v1` |
 | <img src="https://github.com/ollama.png?size=64" alt="" width="18" height="18"> Ollama | `ollama/...` | Anthropic Messages | none | `http://localhost:11434` |
+
 
 <details>
 <summary><img src="https://cdn.simpleicons.org/nvidia/76B900" alt="" width="18" height="18"> <b>NVIDIA NIM</b></summary>
@@ -147,7 +145,6 @@ Get a key at [build.nvidia.com/settings/api-keys](https://build.nvidia.com/setti
 ```dotenv
 NVIDIA_NIM_API_KEY="nvapi-your-key"
 MODEL="nvidia_nim/z-ai/glm4.7"
-ANTHROPIC_AUTH_TOKEN="proxycc"
 ```
 
 Popular examples:
@@ -260,7 +257,7 @@ MODEL="nvidia_nim/z-ai/glm4.7"
 ### Claude Code CLI
 
 ```bash
-ANTHROPIC_AUTH_TOKEN="proxycc" ANTHROPIC_BASE_URL="http://localhost:8082" claude
+ANTHROPIC_AUTH_TOKEN="freecc" ANTHROPIC_BASE_URL="http://localhost:8082" CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 claude
 ```
 
 ### VS Code Extension
@@ -270,7 +267,8 @@ Open Settings, search for `claude-code.environmentVariables`, choose **Edit in s
 ```json
 "claudeCode.environmentVariables": [
   { "name": "ANTHROPIC_BASE_URL", "value": "http://localhost:8082" },
-  { "name": "ANTHROPIC_AUTH_TOKEN", "value": "proxycc" }
+  { "name": "ANTHROPIC_AUTH_TOKEN", "value": "freecc" },
+  { "name": "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY", "value": "1" }
 ]
 ```
 
@@ -288,7 +286,8 @@ Set the environment for `acp.registry.claude-acp`:
 ```json
 "env": {
   "ANTHROPIC_BASE_URL": "http://localhost:8082",
-  "ANTHROPIC_AUTH_TOKEN": "proxycc"
+  "ANTHROPIC_AUTH_TOKEN": "freecc",
+  "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY": "1"
 }
 ```
 
@@ -296,7 +295,9 @@ Restart the IDE after changing the file.
 
 ### Model Picker
 
-Claude Code 2.1.126 or later reads this proxy's `/v1/models` endpoint when `ANTHROPIC_BASE_URL` points at the proxy. Start Claude Code normally, run `/model`, and choose any discovered provider model.
+Claude Code 2.1.126 or later can populate `/model` from this proxy's Gateway `/v1/models` response when `ANTHROPIC_BASE_URL` points here. In **2.1.126–2.1.128** that discovery was automatic; **newer releases** require **`CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`** in the same environment as `ANTHROPIC_*`. Omit the flag if you only set models via proxy config and never use `/model` discovery.
+
+Start Claude Code with that variable set (see [Quick Start](#4-run-claude-code)), run `/model`, and choose any discovered provider model.
 
 <div align="center">
   <img src="cc-model-picker.png" alt="Claude Code model picker showing gateway models" width="700">
@@ -477,7 +478,7 @@ Claude Code CLI / IDE
         |
         | Anthropic Messages API
         v
-PxyClaude proxy (:8082)
+Free Claude Code proxy (:8082)
         |
         | provider-specific request/stream adapter
         v
@@ -492,15 +493,22 @@ Important pieces:
 - OpenRouter, DeepSeek, LM Studio, llama.cpp, and Ollama use Anthropic Messages style transports.
 - The proxy normalizes thinking blocks, tool calls, token usage metadata, and provider errors into the shape Claude Code expects.
 - Request optimizations answer trivial Claude Code probes locally to save latency and quota.
-- Performance-optimized hot paths: `orjson` for JSON serialization, cached model routing, streamlined request pipeline.
-
-### Performance
-
-- **`orjson` in hot paths** — Replaces `json` in `core/anthropic/sse.py`, `core/anthropic/native_sse_block_policy.py`, `providers/openai_compat.py`, and `core/anthropic/tools.py` for faster JSON serialization in the per-chunk streaming path.
-- **Model routing cache** — `api/model_router.py` caches resolved model lookups so repeated requests for the same model name skip re-parsing.
-- **Streamlined request pipeline** — Removed redundant `preflight_stream()` body build; validation now happens directly in the streaming path via SSE error events.
 
 ## Development
+
+### Project Structure
+
+```text
+free-claude-code/
+├── server.py              # ASGI entry point
+├── api/                   # FastAPI routes, service layer, routing, optimizations
+├── core/                  # Shared Anthropic protocol helpers and SSE utilities
+├── providers/             # Provider transports, registry, rate limiting
+├── messaging/             # Discord/Telegram adapters, sessions, voice
+├── cli/                   # Package entry points and Claude process management
+├── config/                # Settings, provider catalog, logging
+└── tests/                 # Unit and contract tests
+```
 
 ### Commands
 
@@ -517,8 +525,8 @@ Run them in that order before pushing. CI enforces the same checks.
 
 `pyproject.toml` installs:
 
-- `PxyClaude`: starts the proxy with configured host and port.
-- `fcc-init`: creates the user config template at `~/.config/PxyClaude/.env`.
+- `free-claude-code`: starts the proxy with configured host and port.
+- `fcc-init`: creates the user config template at `~/.config/free-claude-code/.env`.
 
 ### Extending
 
@@ -529,7 +537,7 @@ Run them in that order before pushing. CI enforces the same checks.
 
 ## Contributing
 
-- Report bugs and feature requests in [Issues](https://github.com/BlusceLabs/PxyClaude/issues).
+- Report bugs and feature requests in [Issues](https://github.com/Alishahryar1/free-claude-code/issues).
 - Keep changes small and covered by focused tests.
 - Do not open Docker integration PRs.
 - Do not open README change PRs just open an issue for it.

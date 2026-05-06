@@ -29,10 +29,6 @@ class ProviderConfig(BaseModel):
     proxy: str = ""
     log_raw_sse_events: bool = False
     log_api_error_tracebacks: bool = False
-    # Response caching (OpenRouter-specific)
-    cache_enabled: bool = False
-    cache_ttl_seconds: int | None = None
-    cache_clear: bool = False
 
 
 class BaseProvider(ABC):

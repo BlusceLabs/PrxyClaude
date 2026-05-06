@@ -262,6 +262,8 @@ async def test_stream_error_status_code(ollama_provider):
 @pytest.mark.asyncio
 async def test_cleanup(ollama_provider):
     """Test that cleanup closes the client."""
-    with patch.object(ollama_provider, "cleanup", new_callable=AsyncMock) as mock_cleanup:
-        await ollama_provider.cleanup()
-        mock_cleanup.assert_called_once()
+    ollama_provider._client.aclose = AsyncMock()
+
+    await ollama_provider.cleanup()
+
+    ollama_provider._client.aclose.assert_called_once()

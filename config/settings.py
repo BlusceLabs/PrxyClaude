@@ -108,19 +108,12 @@ class Settings(BaseSettings):
 
     # ==================== OpenRouter Config ====================
     open_router_api_key: str = Field(default="", validation_alias="OPENROUTER_API_KEY")
-    # Response caching (OpenRouter-specific)
-    open_router_cache_enabled: bool = Field(
-        default=False, validation_alias="OPENROUTER_CACHE_ENABLED"
-    )
-    open_router_cache_ttl_seconds: int | None = Field(
-        default=None, validation_alias="OPENROUTER_CACHE_TTL_SECONDS"
-    )
-    open_router_cache_clear: bool = Field(
-        default=False, validation_alias="OPENROUTER_CACHE_CLEAR"
-    )
 
     # ==================== DeepSeek Config ====================
     deepseek_api_key: str = Field(default="", validation_alias="DEEPSEEK_API_KEY")
+
+    # ==================== Kimi Config ====================
+    kimi_api_key: str = Field(default="", validation_alias="KIMI_API_KEY")
 
     # ==================== Messaging Platform Selection ====================
     # Valid: "telegram" | "discord" | "none"
@@ -171,6 +164,7 @@ class Settings(BaseSettings):
     open_router_proxy: str = Field(default="", validation_alias="OPENROUTER_PROXY")
     lmstudio_proxy: str = Field(default="", validation_alias="LMSTUDIO_PROXY")
     llamacpp_proxy: str = Field(default="", validation_alias="LLAMACPP_PROXY")
+    kimi_proxy: str = Field(default="", validation_alias="KIMI_PROXY")
 
     # ==================== Provider Rate Limiting ====================
     provider_rate_limit: int = Field(default=40, validation_alias="PROVIDER_RATE_LIMIT")
@@ -329,13 +323,6 @@ class Settings(BaseSettings):
     def parse_optional_str(cls, v: Any) -> Any:
         if v == "":
             return None
-        return v
-
-    @field_validator("enable_model_thinking", mode="before")
-    @classmethod
-    def parse_enable_model_thinking(cls, v: Any) -> Any:
-        if v == "":
-            return True
         return v
 
     @field_validator("max_message_log_entries_per_chat", mode="before")

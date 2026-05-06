@@ -618,3 +618,4 @@ def test_listed_server_tools_routed_on_open_router() -> None:
         tools=[Tool(name="web_search", type="web_search_20250305")],
     )
     service.create_message(request)
+    mock_provider.preflight_stream.assert_called()

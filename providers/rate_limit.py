@@ -7,7 +7,6 @@ from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from typing import Any, ClassVar, TypeVar
 
-import aiohttp
 import httpx
 import openai
 from loguru import logger
@@ -58,7 +57,6 @@ class GlobalRateLimiter:
             self._rate_limit, self._rate_window
         )
         self._blocked_until: float = 0
-        self._model_blocked_until: dict[str, float] = {}
         self._concurrency_sem = asyncio.Semaphore(max_concurrency)
         self._initialized = True
 
@@ -155,39 +153,19 @@ class GlobalRateLimiter:
         """
         await self._proactive_limiter.acquire()
 
-    def set_blocked(self, seconds: float = 60, model: str | None = None) -> None:
+    def set_blocked(self, seconds: float = 60) -> None:
         """
-        Set global or per-model block for specified seconds (reactive).
+        Set global block for specified seconds (reactive).
 
         Args:
             seconds: How long to block (default 60s)
-            model: If provided, block only this model (not the whole provider)
         """
-        if model:
-            self._model_blocked_until[model] = time.monotonic() + seconds
-            logger.warning(f"Model '{model}' rate limited for {seconds:.1f}s (reactive)")
-        else:
-            self._blocked_until = time.monotonic() + seconds
-            logger.warning(f"Global provider rate limit set for {seconds:.1f}s (reactive)")
+        self._blocked_until = time.monotonic() + seconds
+        logger.warning(f"Global provider rate limit set for {seconds:.1f}s (reactive)")
 
     def is_blocked(self) -> bool:
         """Check if currently reactively blocked."""
         return time.monotonic() < self._blocked_until
-
-    def is_model_blocked(self, model: str) -> bool:
-        """Check if a specific model is reactively blocked."""
-        until = self._model_blocked_until.get(model, 0)
-        return time.monotonic() < until
-
-    def model_remaining_wait(self, model: str) -> float:
-        """Get remaining reactive wait time for a specific model in seconds."""
-        until = self._model_blocked_until.get(model, 0)
-        return max(0.0, until - time.monotonic())
-
-    def blocked_models(self) -> list[str]:
-        """Return list of currently blocked models."""
-        now = time.monotonic()
-        return [m for m, until in self._model_blocked_until.items() if now < until]
 
     def matches_config(
         self, rate_limit: int, rate_window: float, max_concurrency: int
@@ -266,13 +244,8 @@ class GlobalRateLimiter:
                 )
                 self.set_blocked(delay)
                 await asyncio.sleep(delay)
-            except (httpx.HTTPStatusError, aiohttp.ClientResponseError) as e:
-                status = (
-                    e.response.status_code
-                    if isinstance(e, httpx.HTTPStatusError)
-                    else e.status
-                )
-                if status != 429:
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code != 429:
                     raise
                 last_exc = e
                 if attempt >= max_retries:
