@@ -1,35 +1,35 @@
 <div align="center">
 
-# 🤖 Free Claude Code
+# 🤖 PxyClaude
 
 Use Claude Code CLI, VS Code, JetBrains ACP, or chat bots through your own Anthropic-compatible proxy.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776ab.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json&style=for-the-badge)](https://github.com/astral-sh/uv)
-[![Tested with Pytest](https://img.shields.io/badge/testing-Pytest-00c0ff.svg?style=for-the-badge)](https://github.com/Alishahryar1/free-claude-code/actions/workflows/tests.yml)
+[![Tested with Pytest](https://img.shields.io/badge/testing-Pytest-00c0ff.svg?style=for-the-badge)](https://github.com/BlusceLabs/PxyClaude/actions/workflows/tests.yml)
 [![Type checking: Ty](https://img.shields.io/badge/type%20checking-ty-ffcc00.svg?style=for-the-badge)](https://pypi.org/project/ty/)
 [![Code style: Ruff](https://img.shields.io/badge/code%20formatting-ruff-f5a623.svg?style=for-the-badge)](https://github.com/astral-sh/ruff)
 [![Logging: Loguru](https://img.shields.io/badge/logging-loguru-4ecdc4.svg?style=for-the-badge)](https://github.com/Delgan/loguru)
 
-Free Claude Code routes Anthropic Messages API traffic from Claude Code to NVIDIA NIM, OpenRouter, DeepSeek, LM Studio, llama.cpp, or Ollama. It keeps Claude Code's client-side protocol stable while letting you choose free, paid, or local models.
+PxyClaude routes Anthropic Messages API traffic from Claude Code to NVIDIA NIM, OpenRouter, DeepSeek, LM Studio, llama.cpp, or Ollama. It keeps Claude Code's client-side protocol stable while letting you choose free, paid, or local models.
 
 [Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-claude-code) · [Troubleshooting](#troubleshooting) · [Development](#development)
 
 </div>
 
 <div align="center">
-  <img src="pic.png" alt="Free Claude Code in action" width="700">
+  <img src="pic.png" alt="PxyClaude in action" width="700">
 </div>
 
 ## Star History
 
 <div align="center">
-  <a href="https://star-history.com/#Alishahryar1/free-claude-code&Date">
+  <a href="https://star-history.com/#BlusceLabs/PxyClaude&Date">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Alishahryar1/free-claude-code&type=Date&theme=dark">
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Alishahryar1/free-claude-code&type=Date">
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Alishahryar1/free-claude-code&type=Date" width="700">
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=BlusceLabs/PxyClaude&type=Date&theme=dark">
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=BlusceLabs/PxyClaude&type=Date">
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=BlusceLabs/PxyClaude&type=Date" width="700">
     </picture>
   </a>
 </div>
@@ -69,8 +69,8 @@ uv python install 3.14
 ### 2. Clone And Configure
 
 ```bash
-git clone https://github.com/Alishahryar1/free-claude-code.git
-cd free-claude-code
+git clone https://github.com/BlusceLabs/PxyClaude.git
+cd PxyClaude
 cp .env.example .env
 ```
 
@@ -79,7 +79,7 @@ Edit `.env` and choose one provider. For the default NVIDIA NIM path:
 ```dotenv
 NVIDIA_NIM_API_KEY="nvapi-your-key"
 MODEL="nvidia_nim/z-ai/glm4.7"
-ANTHROPIC_AUTH_TOKEN="freecc"
+ANTHROPIC_AUTH_TOKEN="proxycc"
 ```
 
 Use any local secret for `ANTHROPIC_AUTH_TOKEN`; Claude Code will send the same value back to this proxy. Leave it empty only for local/private testing.
@@ -93,12 +93,12 @@ uv run uvicorn server:app --host 0.0.0.0 --port 8082
 Package install alternative:
 
 ```bash
-uv tool install git+https://github.com/Alishahryar1/free-claude-code.git
+uv tool install git+https://github.com/BlusceLabs/PxyClaudegit
 fcc-init
-free-claude-code
+PxyClaude
 ```
 
-`fcc-init` creates `~/.config/free-claude-code/.env` from the bundled template.
+`fcc-init` creates `~/.config/PxyClaude/.env` from the bundled template.
 
 ### 4. Run Claude Code
 
@@ -113,7 +113,7 @@ $env:ANTHROPIC_AUTH_TOKEN="freecc"; $env:ANTHROPIC_BASE_URL="http://localhost:80
 Bash:
 
 ```bash
-ANTHROPIC_AUTH_TOKEN="freecc" ANTHROPIC_BASE_URL="http://localhost:8082" CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 claude
+ANTHROPIC_AUTH_TOKEN="proxycc" ANTHROPIC_BASE_URL="http://localhost:8082" CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 claude
 ```
 
 ## Choose A Provider
@@ -267,7 +267,7 @@ Open Settings, search for `claude-code.environmentVariables`, choose **Edit in s
 ```json
 "claudeCode.environmentVariables": [
   { "name": "ANTHROPIC_BASE_URL", "value": "http://localhost:8082" },
-  { "name": "ANTHROPIC_AUTH_TOKEN", "value": "freecc" },
+  { "name": "ANTHROPIC_AUTH_TOKEN", "value": "proxycc" },
   { "name": "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY", "value": "1" }
 ]
 ```
@@ -286,7 +286,7 @@ Set the environment for `acp.registry.claude-acp`:
 ```json
 "env": {
   "ANTHROPIC_BASE_URL": "http://localhost:8082",
-  "ANTHROPIC_AUTH_TOKEN": "freecc",
+  "ANTHROPIC_AUTH_TOKEN": "proxycc",
   "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY": "1"
 }
 ```

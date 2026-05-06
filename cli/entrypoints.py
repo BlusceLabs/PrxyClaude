@@ -21,7 +21,7 @@ def _load_env_template() -> str:
 
 
 def serve() -> None:
-    """Start the FastAPI server (registered as `free-claude-code` script)."""
+    """Start the FastAPI server (registered as `PxyClaude` script)."""
     import uvicorn
 
     from cli.process_registry import kill_all_best_effort
@@ -42,8 +42,8 @@ def serve() -> None:
 
 
 def init() -> None:
-    """Scaffold config at ~/.config/free-claude-code/.env (registered as `fcc-init`)."""
-    config_dir = Path.home() / ".config" / "free-claude-code"
+    """Scaffold config at ~/.config/PxyClaude/.env (registered as `fcc-init`)."""
+    config_dir = Path.home() / ".config" / "PxyClaude"
     env_file = config_dir / ".env"
 
     if env_file.exists():
@@ -56,5 +56,5 @@ def init() -> None:
     env_file.write_text(template, encoding="utf-8")
     print(f"Config created at {env_file}")
     print(
-        "Edit it to set your API keys and model preferences, then run: free-claude-code"
+        "Edit it to set your API keys and model preferences, then run: PxyClaude"
     )

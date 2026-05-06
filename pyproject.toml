@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "free-claude-code"
+name = "PxyClaude"
 version = "2.0.0"
 description = "Middleware between Claude Code CLI (Anthropic API) and NVIDIA NIM"
 readme = "README.md"
@@ -25,7 +25,7 @@ dependencies = [
 ]
 
 [project.scripts]
-free-claude-code = "cli.entrypoints:serve"
+PxyClaude = "cli.entrypoints:serve"
 fcc-init = "cli.entrypoints:init"
 
 [project.optional-dependencies]

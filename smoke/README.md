@@ -117,7 +117,7 @@ uv run pytest smoke/product -n 0 -s --tb=short
 
 Run smoke the same way you run tests (`uv run pytest smoke` from the repo). Child
 processes use the **same Python interpreter** as the test runner, not nested
-`uv run`, so Windows does not try to replace `free-claude-code.exe` while it is
+`uv run`, so Windows does not try to replace `PxyClaude.exe` while it is
 locked.
 
 ## Failure Classes
