@@ -54,6 +54,9 @@ class OpenRouterProvider(AnthropicMessagesTransport):
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
             "anthropic-version": _ANTHROPIC_VERSION,
+            "HTTP-Referer": "https://github.com/BlusceLabs/PxyClaude",
+            "X-OpenRouter-Title": "PxyClaude",
+            "X-OpenRouter-Categories": "cli-agent,frontend-design",
         }
 
     def _model_list_headers(self) -> dict[str, str]:
