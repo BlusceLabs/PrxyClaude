@@ -107,7 +107,7 @@ Point `ANTHROPIC_BASE_URL` at the proxy root. Do not append `/v1`. Set `CLAUDE_C
 PowerShell:
 
 ```powershell
-$env:ANTHROPIC_AUTH_TOKEN="freecc"; $env:ANTHROPIC_BASE_URL="http://localhost:8082"; $env:CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="1"; claude
+$env:ANTHROPIC_AUTH_TOKEN="proxycc"; $env:ANTHROPIC_BASE_URL="http://localhost:8082"; $env:CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="1"; claude
 ```
 
 Bash:
@@ -257,7 +257,7 @@ MODEL="nvidia_nim/z-ai/glm4.7"
 ### Claude Code CLI
 
 ```bash
-ANTHROPIC_AUTH_TOKEN="freecc" ANTHROPIC_BASE_URL="http://localhost:8082" CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 claude
+ANTHROPIC_AUTH_TOKEN="proxycc" ANTHROPIC_BASE_URL="http://localhost:8082" CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 claude
 ```
 
 ### VS Code Extension
@@ -499,7 +499,7 @@ Important pieces:
 ### Project Structure
 
 ```text
-free-claude-code/
+ProxyClaude/
 ├── server.py              # ASGI entry point
 ├── api/                   # FastAPI routes, service layer, routing, optimizations
 ├── core/                  # Shared Anthropic protocol helpers and SSE utilities
@@ -525,8 +525,8 @@ Run them in that order before pushing. CI enforces the same checks.
 
 `pyproject.toml` installs:
 
-- `free-claude-code`: starts the proxy with configured host and port.
-- `fcc-init`: creates the user config template at `~/.config/free-claude-code/.env`.
+- `ProxyClaude`: starts the proxy with configured host and port.
+- `fcc-init`: creates the user config template at `~/.config/ProxyClaude/.env`.
 
 ### Extending
 
@@ -537,7 +537,7 @@ Run them in that order before pushing. CI enforces the same checks.
 
 ## Contributing
 
-- Report bugs and feature requests in [Issues](https://github.com/Alishahryar1/free-claude-code/issues).
+- Report bugs and feature requests in [Issues](https://github.com/Alishahryar1/ProxyClaude/issues).
 - Keep changes small and covered by focused tests.
 - Do not open Docker integration PRs.
 - Do not open README change PRs just open an issue for it.

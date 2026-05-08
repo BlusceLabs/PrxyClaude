@@ -55,6 +55,4 @@ def init() -> None:
     template = _load_env_template()
     env_file.write_text(template, encoding="utf-8")
     print(f"Config created at {env_file}")
-    print(
-        "Edit it to set your API keys and model preferences, then run: PxyClaude"
-    )
+    print("Edit it to set your API keys and model preferences, then run: PxyClaude")

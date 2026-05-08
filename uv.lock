@@ -556,84 +556,6 @@ wheels = [
 ]
 
 [[package]]
-name = "free-claude-code"
-version = "2.0.0"
-source = { editable = "." }
-dependencies = [
-    { name = "aiohttp" },
-    { name = "discord-py" },
-    { name = "fastapi", extra = ["standard"] },
-    { name = "httpx", extra = ["socks"] },
-    { name = "loguru" },
-    { name = "markdown-it-py" },
-    { name = "openai" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "python-dotenv" },
-    { name = "python-telegram-bot" },
-    { name = "tiktoken" },
-    { name = "uvicorn" },
-]
-
-[package.optional-dependencies]
-voice = [
-    { name = "grpcio" },
-    { name = "grpcio-tools" },
-    { name = "nvidia-riva-client" },
-]
-voice-local = [
-    { name = "accelerate" },
-    { name = "librosa" },
-    { name = "torch" },
-    { name = "transformers" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-xdist" },
-    { name = "ruff" },
-    { name = "ty" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "accelerate", marker = "extra == 'voice-local'", specifier = ">=1.13.0" },
-    { name = "aiohttp", specifier = ">=3.13.4" },
-    { name = "discord-py", specifier = ">=2.7.1" },
-    { name = "fastapi", extras = ["standard"], specifier = ">=0.136.1" },
-    { name = "grpcio", marker = "extra == 'voice'", specifier = ">=1.80.0" },
-    { name = "grpcio-tools", marker = "extra == 'voice'", specifier = ">=1.80.0" },
-    { name = "httpx", extras = ["socks"], specifier = ">=0.28.1" },
-    { name = "librosa", marker = "extra == 'voice-local'", specifier = ">=0.10.0" },
-    { name = "loguru", specifier = ">=0.7.0" },
-    { name = "markdown-it-py", specifier = ">=3.0.0" },
-    { name = "nvidia-riva-client", marker = "extra == 'voice'", specifier = ">=2.25.1" },
-    { name = "openai", specifier = ">=2.33.0" },
-    { name = "pydantic", specifier = ">=2.13.3" },
-    { name = "pydantic-settings", specifier = ">=2.14.0" },
-    { name = "python-dotenv", specifier = ">=1.2.2" },
-    { name = "python-telegram-bot", specifier = ">=22.7" },
-    { name = "tiktoken", specifier = ">=0.7.0" },
-    { name = "torch", marker = "extra == 'voice-local'", specifier = ">=2.11.0", index = "https://download.pytorch.org/whl/cu130" },
-    { name = "transformers", marker = "extra == 'voice-local'", specifier = ">=5.7.0" },
-    { name = "uvicorn", specifier = ">=0.46.0" },
-]
-provides-extras = ["voice", "voice-local"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=9.0.3" },
-    { name = "pytest-asyncio", specifier = ">=1.3.0" },
-    { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "pytest-xdist", specifier = ">=3.8.0" },
-    { name = "ruff", specifier = ">=0.15.12" },
-    { name = "ty", specifier = ">=0.0.34" },
-]
-
-[[package]]
 name = "frozenlist"
 version = "1.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1310,6 +1232,7 @@ dependencies = [
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2e/f9/85f0bf863deed9078f3a25938a9f06206f98bcc39a6541a48cc97143db10/nvidia_riva_client-2.25.1-1-py3-none-any.whl", hash = "sha256:bde1232a8de3fe1561cccf49d3d0e6fe06190b1f0df4ad0ba118b9f5ae5a06aa", size = 55383, upload-time = "2026-04-30T10:27:58.381Z" },
+    { url = "https://files.pythonhosted.org/packages/27/c6/eb4acc0cb884c06109ea123d1c7dbb28974c9dddd73a624b1765a89e023e/nvidia_riva_client-2.25.1-2-py3-none-any.whl", hash = "sha256:5657680ab238b5930c07ce9a4a50d642524f25bff4099c1f818baaa8baad94fe", size = 55462, upload-time = "2026-05-06T12:30:02.948Z" },
     { url = "https://files.pythonhosted.org/packages/08/3b/b267af66a49c2e80e673b85ccd5484059b141be8031e4a4bb84ea4bcf31f/nvidia_riva_client-2.25.1-py3-none-any.whl", hash = "sha256:07c48c9cc7f3ca04cd988ad6d2205b0bcf3f6f25bb97d76b397e87cc696acc9f", size = 55371, upload-time = "2026-03-25T13:05:57.425Z" },
 ]
 
@@ -1447,6 +1370,84 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/04/78/0acd37ca84ce3ddffaa92ef0f571e073faa6d8ff1f0559ab1272188ea2be/psutil-7.2.2-cp36-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:b58fabe35e80b264a4e3bb23e6b96f9e45a3df7fb7eed419ac0e5947c61e47cc", size = 148266, upload-time = "2026-01-28T18:15:31.597Z" },
     { url = "https://files.pythonhosted.org/packages/b4/90/e2159492b5426be0c1fef7acba807a03511f97c5f86b3caeda6ad92351a7/psutil-7.2.2-cp37-abi3-win_amd64.whl", hash = "sha256:eb7e81434c8d223ec4a219b5fc1c47d0417b12be7ea866e24fb5ad6e84b3d988", size = 137737, upload-time = "2026-01-28T18:15:33.849Z" },
     { url = "https://files.pythonhosted.org/packages/8c/c7/7bb2e321574b10df20cbde462a94e2b71d05f9bbda251ef27d104668306a/psutil-7.2.2-cp37-abi3-win_arm64.whl", hash = "sha256:8c233660f575a5a89e6d4cb65d9f938126312bca76d8fe087b947b3a1aaac9ee", size = 134617, upload-time = "2026-01-28T18:15:36.514Z" },
+]
+
+[[package]]
+name = "pxyclaude"
+version = "2.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "discord-py" },
+    { name = "fastapi", extra = ["standard"] },
+    { name = "httpx", extra = ["socks"] },
+    { name = "loguru" },
+    { name = "markdown-it-py" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "python-dotenv" },
+    { name = "python-telegram-bot" },
+    { name = "tiktoken" },
+    { name = "uvicorn" },
+]
+
+[package.optional-dependencies]
+voice = [
+    { name = "grpcio" },
+    { name = "grpcio-tools" },
+    { name = "nvidia-riva-client" },
+]
+voice-local = [
+    { name = "accelerate" },
+    { name = "librosa" },
+    { name = "torch" },
+    { name = "transformers" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "pytest-xdist" },
+    { name = "ruff" },
+    { name = "ty" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "accelerate", marker = "extra == 'voice-local'", specifier = ">=1.13.0" },
+    { name = "aiohttp", specifier = ">=3.13.4" },
+    { name = "discord-py", specifier = ">=2.7.1" },
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.136.1" },
+    { name = "grpcio", marker = "extra == 'voice'", specifier = ">=1.80.0" },
+    { name = "grpcio-tools", marker = "extra == 'voice'", specifier = ">=1.80.0" },
+    { name = "httpx", extras = ["socks"], specifier = ">=0.28.1" },
+    { name = "librosa", marker = "extra == 'voice-local'", specifier = ">=0.10.0" },
+    { name = "loguru", specifier = ">=0.7.0" },
+    { name = "markdown-it-py", specifier = ">=3.0.0" },
+    { name = "nvidia-riva-client", marker = "extra == 'voice'", specifier = ">=2.25.1" },
+    { name = "openai", specifier = ">=2.33.0" },
+    { name = "pydantic", specifier = ">=2.13.3" },
+    { name = "pydantic-settings", specifier = ">=2.14.0" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "python-telegram-bot", specifier = ">=22.7" },
+    { name = "tiktoken", specifier = ">=0.7.0" },
+    { name = "torch", marker = "extra == 'voice-local'", specifier = ">=2.11.0", index = "https://download.pytorch.org/whl/cu130" },
+    { name = "transformers", marker = "extra == 'voice-local'", specifier = ">=5.7.0" },
+    { name = "uvicorn", specifier = ">=0.46.0" },
+]
+provides-extras = ["voice", "voice-local"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest-asyncio", specifier = ">=1.3.0" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+    { name = "pytest-xdist", specifier = ">=3.8.0" },
+    { name = "ruff", specifier = ">=0.15.12" },
+    { name = "ty", specifier = ">=0.0.34" },
 ]
 
 [[package]]
