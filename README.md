@@ -12,7 +12,7 @@ Use Claude Code CLI, VS Code, JetBrains ACP, or chat bots through your own Anthr
 [![Code style: Ruff](https://img.shields.io/badge/code%20formatting-ruff-f5a623.svg?style=for-the-badge)](https://github.com/astral-sh/ruff)
 [![Logging: Loguru](https://img.shields.io/badge/logging-loguru-4ecdc4.svg?style=for-the-badge)](https://github.com/Delgan/loguru)
 
-PxyClaude routes Anthropic Messages API traffic from Claude Code to NVIDIA NIM, OpenRouter, DeepSeek, LM Studio, llama.cpp, or Ollama. It keeps Claude Code's client-side protocol stable while letting you choose free, paid, or local models.
+PxyClaude routes Anthropic Messages API traffic from Claude Code to OpenAI, Anthropic, NVIDIA NIM, OpenRouter, DeepSeek, z.ai, Kimi, Gemini, Cloudflare AI Gateway, LM Studio, llama.cpp, and Ollama. It keeps Claude Code's client-side protocol stable while letting you choose free, paid, or local models.
 
 [Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-claude-code) · [Troubleshooting](#troubleshooting) · [Development](#development)
 
@@ -37,7 +37,7 @@ PxyClaude routes Anthropic Messages API traffic from Claude Code to NVIDIA NIM, 
 ## What You Get
 
 - Drop-in proxy for Claude Code's Anthropic API calls.
-- Six provider backends: NVIDIA NIM, OpenRouter, DeepSeek, LM Studio, llama.cpp, and Ollama.
+- Twelve provider backends: OpenAI, Anthropic, NVIDIA NIM, OpenRouter, DeepSeek, z.ai, Kimi, Gemini, Cloudflare AI Gateway, LM Studio, llama.cpp, and Ollama.
 - Per-model routing: send Opus, Sonnet, Haiku, and fallback traffic to different providers.
 - Native Claude Code `/model` picker support through the proxy's `/v1/models` endpoint (Claude Code must opt in to Gateway model discovery; see [Model Picker](#model-picker)).
 - Streaming, tool use, reasoning/thinking block handling, and local request optimizations.
@@ -129,9 +129,14 @@ provider_id/model/name
 | Provider | Prefix | Transport | Key | Default base URL |
 | --- | --- | --- | --- | --- |
 | <img src="https://cdn.simpleicons.org/nvidia/76B900" alt="" width="18" height="18"> NVIDIA NIM | `nvidia_nim/...` | OpenAI chat translation | `NVIDIA_NIM_API_KEY` | `https://integrate.api.nvidia.com/v1` |
+| <img src="https://cdn.simpleicons.org/openai" alt="" width="18" height="18"> OpenAI | `openai/...` | OpenAI chat translation | `OPENAI_API_KEY` | `https://api.openai.com/v1` |
 | <img src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-avatar/avatars/kimi.webp" alt="" width="18" height="18"> Kimi | `kimi/...` | OpenAI chat translation | `KIMI_API_KEY` | `https://api.moonshot.ai/v1` |
 | <img src="https://cdn.simpleicons.org/openrouter/6C47FF" alt="" width="18" height="18"> OpenRouter | `open_router/...` | Anthropic Messages | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` |
 | <img src="https://cdn.simpleicons.org/deepseek/4D6BFF" alt="" width="18" height="18"> DeepSeek | `deepseek/...` | Anthropic Messages | `DEEPSEEK_API_KEY` | `https://api.deepseek.com/anthropic` |
+| z.ai | `z_ai/...` | OpenAI chat translation | `ZAI_API_KEY` | `https://api.z.ai/api/paas/v4` |
+| Cloudflare AI Gateway | `cloudflare_gateway/...` | Anthropic Messages | `CF_AIG_TOKEN` | `https://gateway.ai.cloudflare.com/v1/.../anthropic/v1` |
+| <img src="https://cdn.simpleicons.org/google" alt="" width="18" height="18"> Gemini | `gemini/...` | OpenAI chat translation | `GEMINI_API_KEY` | `https://generativelanguage.googleapis.com/v1beta/openai` |
+| <img src="https://github.com/anthropics.png?size=64" alt="" width="18" height="18"> Anthropic | `anthropic/...` | Anthropic Messages | `ANTHROPIC_API_KEY` | `https://api.anthropic.com/v1` |
 | <img src="https://github.com/lmstudio-ai.png?size=64" alt="" width="18" height="18"> LM Studio | `lmstudio/...` | Anthropic Messages | none | `http://localhost:1234/v1` |
 | <img src="https://github.com/ggml-org.png?size=64" alt="" width="18" height="18"> llama.cpp | `llamacpp/...` | Anthropic Messages | none | `http://localhost:8080/v1` |
 | <img src="https://github.com/ollama.png?size=64" alt="" width="18" height="18"> Ollama | `ollama/...` | Anthropic Messages | none | `http://localhost:11434` |
@@ -232,6 +237,82 @@ MODEL="ollama/llama3.1"
 ```
 
 Use the same tag shown by `ollama list`, for example `ollama/llama3.1:8b`.
+
+</details>
+
+<details>
+<summary><img src="https://cdn.simpleicons.org/openai" alt="" width="18" height="18"> <b>OpenAI</b></summary>
+
+Get a key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
+
+```dotenv
+OPENAI_API_KEY="sk-your-key"
+MODEL="openai/gpt-4o"
+```
+
+OpenAI models use the native chat completions endpoint. Popular choices:
+
+- `openai/gpt-4o`
+- `openai/gpt-4o-mini`
+- `openai/o3-mini`
+- `openai/gpt-4.1`
+
+</details>
+
+<details>
+<summary><img src="https://github.com/anthropics.png?size=64" alt="" width="18" height="18"> <b>Anthropic Direct</b></summary>
+
+Get a key at [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys).
+
+```dotenv
+ANTHROPIC_API_KEY="sk-ant-your-key"
+MODEL="anthropic/claude-sonnet-4-20250514"
+```
+
+Routes directly to Anthropic's Messages API. Useful for testing or when you want Claude Code to use the official Anthropic endpoint through the same proxy interface.
+
+</details>
+
+<details>
+<summary><b>z.ai</b></summary>
+
+Get a key at [z.ai/manage-apikey/apikey-list](https://z.ai/manage-apikey/apikey-list).
+
+```dotenv
+ZAI_API_KEY="your-zai-key"
+MODEL="z_ai/glm-4.7-flash"
+```
+
+z.ai offers GLM series models through an OpenAI-compatible endpoint.
+
+</details>
+
+<details>
+<summary><b>Cloudflare AI Gateway</b></summary>
+
+Get a Cloudflare API token at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens). Requires AI Gateway - Read and AI Gateway - Edit permissions.
+
+```dotenv
+CF_AIG_TOKEN="your-cf-token"
+CF_GATEWAY_BASE_URL="https://gateway.ai.cloudflare.com/v1/ACCOUNT_ID/GATEWAY_NAME/anthropic/v1"
+MODEL="cloudflare_gateway/claude-sonnet-4-20250514"
+```
+
+Proxies Anthropic Messages API traffic through Cloudflare AI Gateway with caching, logging, and rate limiting.
+
+</details>
+
+<details>
+<summary><img src="https://cdn.simpleicons.org/google" alt="" width="18" height="18"> <b>Gemini</b></summary>
+
+Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+
+```dotenv
+GEMINI_API_KEY="your-gemini-key"
+MODEL="gemini/gemini-2.5-flash"
+```
+
+Uses Gemini's OpenAI-compatible chat completions endpoint.
 
 </details>
 
@@ -385,8 +466,14 @@ Blank per-tier values inherit the fallback. Blank thinking overrides inherit `EN
 
 ```dotenv
 NVIDIA_NIM_API_KEY=""
+OPENAI_API_KEY=""
+ANTHROPIC_API_KEY=""
 OPENROUTER_API_KEY=""
 DEEPSEEK_API_KEY=""
+KIMI_API_KEY=""
+ZAI_API_KEY=""
+CF_AIG_TOKEN=""
+GEMINI_API_KEY=""
 LM_STUDIO_BASE_URL="http://localhost:1234/v1"
 LLAMACPP_BASE_URL="http://localhost:8080/v1"
 OLLAMA_BASE_URL="http://localhost:11434"
@@ -396,7 +483,13 @@ Proxy settings are per provider:
 
 ```dotenv
 NVIDIA_NIM_PROXY=""
+OPENAI_PROXY=""
+ANTHROPIC_PROXY=""
 OPENROUTER_PROXY=""
+KIMI_PROXY=""
+ZAI_PROXY=""
+CF_GATEWAY_PROXY=""
+GEMINI_PROXY=""
 LMSTUDIO_PROXY=""
 LLAMACPP_PROXY=""
 ```
@@ -404,12 +497,12 @@ LLAMACPP_PROXY=""
 ### Rate Limits And Timeouts
 
 ```dotenv
-PROVIDER_RATE_LIMIT=1
-PROVIDER_RATE_WINDOW=3
-PROVIDER_MAX_CONCURRENCY=5
-HTTP_READ_TIMEOUT=120
-HTTP_WRITE_TIMEOUT=10
-HTTP_CONNECT_TIMEOUT=10
+PROVIDER_RATE_LIMIT=60
+PROVIDER_RATE_WINDOW=30
+PROVIDER_MAX_CONCURRENCY=10
+HTTP_READ_TIMEOUT=60
+HTTP_WRITE_TIMEOUT=15
+HTTP_CONNECT_TIMEOUT=15
 ```
 
 Use lower limits for free hosted providers; local providers can usually tolerate higher concurrency if the machine can handle it.
@@ -482,15 +575,16 @@ Free Claude Code proxy (:8082)
         |
         | provider-specific request/stream adapter
         v
-NIM / OpenRouter / DeepSeek / LM Studio / llama.cpp / Ollama
+OpenAI / Anthropic / NVIDIA NIM / OpenRouter / DeepSeek / z.ai
+Kimi / Gemini / Cloudflare AI Gateway / LM Studio / llama.cpp / Ollama
 ```
 
 Important pieces:
 
 - FastAPI exposes Anthropic-compatible routes such as `/v1/messages`, `/v1/messages/count_tokens`, and `/v1/models`.
 - Model routing resolves the Claude model name to `MODEL_OPUS`, `MODEL_SONNET`, `MODEL_HAIKU`, or `MODEL`.
-- NIM uses OpenAI chat streaming translated into Anthropic SSE.
-- OpenRouter, DeepSeek, LM Studio, llama.cpp, and Ollama use Anthropic Messages style transports.
+- **OpenAI-chat providers** (OpenAI, NVIDIA NIM, Kimi, z.ai, Gemini) use OpenAI chat streaming translated into Anthropic SSE.
+- **Native Anthropic providers** (Anthropic, OpenRouter, DeepSeek, Cloudflare AI Gateway, LM Studio, llama.cpp, Ollama) use Anthropic Messages style transports.
 - The proxy normalizes thinking blocks, tool calls, token usage metadata, and provider errors into the shape Claude Code expects.
 - Request optimizations answer trivial Claude Code probes locally to save latency and quota.
 

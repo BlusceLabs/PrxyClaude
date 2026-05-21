@@ -94,6 +94,20 @@ def _create_gemini(config: ProviderConfig, _settings: Settings) -> BaseProvider:
     return GeminiProvider(config)
 
 
+def _create_openai(config: ProviderConfig, _settings: Settings) -> BaseProvider:
+    from providers.openai import OpenAIProvider
+
+    return OpenAIProvider(config)
+
+
+def _create_anthropic_direct(
+    config: ProviderConfig, _settings: Settings
+) -> BaseProvider:
+    from providers.anthropic_direct import AnthropicDirectProvider
+
+    return AnthropicDirectProvider(config)
+
+
 PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "nvidia_nim": _create_nvidia_nim,
     "open_router": _create_open_router,
@@ -105,6 +119,8 @@ PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "z_ai": _create_z_ai,
     "cloudflare_gateway": _create_cloudflare_gateway,
     "gemini": _create_gemini,
+    "openai": _create_openai,
+    "anthropic": _create_anthropic_direct,
 }
 
 if set(PROVIDER_DESCRIPTORS) != set(SUPPORTED_PROVIDER_IDS) or set(

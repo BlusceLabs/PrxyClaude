@@ -163,7 +163,7 @@ class OpenAIChatTransport(BaseProvider):
 
     def _process_tool_call(self, tc: dict, sse: SSEBuilder) -> Iterator[str]:
         """Process a single tool call delta and yield SSE events."""
-        tc_index = tc.get("index", 0)
+        tc_index = tc.get("index") or 0
         if tc_index < 0:
             tc_index = len(sse.blocks.tool_states)
 
@@ -327,18 +327,19 @@ class OpenAIChatTransport(BaseProvider):
                         for event in sse.close_content_blocks():
                             yield event
                         for tc in delta.tool_calls:
+                            fn = tc.function
                             tc_info = {
                                 "index": tc.index,
                                 "id": tc.id,
                                 "function": {
-                                    "name": tc.function.name,
-                                    "arguments": tc.function.arguments,
+                                    "name": fn.name if fn else None,
+                                    "arguments": fn.arguments if fn else None,
                                 },
                             }
                             for event in self._process_tool_call(tc_info, sse):
                                 yield event
 
-            except asyncio.CancelledError, GeneratorExit:
+            except (asyncio.CancelledError, GeneratorExit):
                 raise
             except Exception as e:
                 self._log_stream_transport_error(tag, req_tag, e)

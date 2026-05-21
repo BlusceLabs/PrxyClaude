@@ -38,14 +38,20 @@ class GeminiProvider(OpenAIChatTransport):
 
     async def list_model_ids(self) -> frozenset[str]:
         """Return model ids with the ``models/`` prefix stripped."""
-        raw = await super().list_model_ids()
+        try:
+            raw = await super().list_model_ids()
+        except Exception:
+            return frozenset()
         return frozenset(
             _strip_model_prefix(mid) for mid in raw
         )
 
     async def list_model_infos(self) -> frozenset[ProviderModelInfo]:
         """Return model infos with the ``models/`` prefix stripped."""
-        raw = await super().list_model_infos()
+        try:
+            raw = await super().list_model_infos()
+        except Exception:
+            return frozenset()
         return frozenset(
             ProviderModelInfo(
                 model_id=_strip_model_prefix(info.model_id),

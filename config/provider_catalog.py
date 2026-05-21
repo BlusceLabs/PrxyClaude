@@ -28,6 +28,11 @@ GEMINI_DEFAULT_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
 CF_GATEWAY_V1_DEFAULT_BASE = (
     "https://gateway.ai.cloudflare.com/v1/ACCOUNT_ID/GATEWAY_NAME/anthropic/v1"
 )
+OPENAI_DEFAULT_BASE = "https://api.openai.com/v1"
+ANTHROPIC_DEFAULT_BASE = "https://api.anthropic.com/v1"
+# Anthropic Direct API — sentinel: use ANTHROPIC_API_KEY.
+# Note: The provider_id is "anthropic" to avoid clashing with the
+# ``anthropic_messages`` transport name.
 
 
 @dataclass(frozen=True, slots=True)
@@ -149,6 +154,26 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         default_base_url=GEMINI_DEFAULT_BASE,
         proxy_attr="gemini_proxy",
         capabilities=("chat", "streaming", "tools", "thinking"),
+    ),
+    "openai": ProviderDescriptor(
+        provider_id="openai",
+        transport_type="openai_chat",
+        credential_env="OPENAI_API_KEY",
+        credential_url="https://platform.openai.com/api-keys",
+        credential_attr="openai_api_key",
+        default_base_url=OPENAI_DEFAULT_BASE,
+        proxy_attr="openai_proxy",
+        capabilities=("chat", "streaming", "tools", "thinking"),
+    ),
+    "anthropic": ProviderDescriptor(
+        provider_id="anthropic",
+        transport_type="anthropic_messages",
+        credential_env="ANTHROPIC_API_KEY",
+        credential_url="https://console.anthropic.com/settings/keys",
+        credential_attr="anthropic_api_key",
+        default_base_url=ANTHROPIC_DEFAULT_BASE,
+        proxy_attr="anthropic_proxy",
+        capabilities=("chat", "streaming", "tools", "thinking", "native_anthropic"),
     ),
 }
 

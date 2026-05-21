@@ -128,6 +128,12 @@ class Settings(BaseSettings):
     # ==================== Gemini Config ====================
     gemini_api_key: str = Field(default="", validation_alias="GEMINI_API_KEY")
 
+    # ==================== OpenAI Config ====================
+    openai_api_key: str = Field(default="", validation_alias="OPENAI_API_KEY")
+
+    # ==================== Anthropic Direct Config ====================
+    anthropic_api_key: str = Field(default="", validation_alias="ANTHROPIC_API_KEY")
+
     # ==================== Messaging Platform Selection ====================
     # Valid: "telegram" | "discord" | "none"
     messaging_platform: str = Field(
@@ -181,14 +187,16 @@ class Settings(BaseSettings):
     z_ai_proxy: str = Field(default="", validation_alias="ZAI_PROXY")
     cf_gateway_proxy: str = Field(default="", validation_alias="CF_GATEWAY_PROXY")
     gemini_proxy: str = Field(default="", validation_alias="GEMINI_PROXY")
+    openai_proxy: str = Field(default="", validation_alias="OPENAI_PROXY")
+    anthropic_proxy: str = Field(default="", validation_alias="ANTHROPIC_PROXY")
 
     # ==================== Provider Rate Limiting ====================
-    provider_rate_limit: int = Field(default=40, validation_alias="PROVIDER_RATE_LIMIT")
+    provider_rate_limit: int = Field(default=60, validation_alias="PROVIDER_RATE_LIMIT")
     provider_rate_window: int = Field(
-        default=60, validation_alias="PROVIDER_RATE_WINDOW"
+        default=30, validation_alias="PROVIDER_RATE_WINDOW"
     )
     provider_max_concurrency: int = Field(
-        default=5, validation_alias="PROVIDER_MAX_CONCURRENCY"
+        default=10, validation_alias="PROVIDER_MAX_CONCURRENCY"
     )
     enable_model_thinking: bool = Field(
         default=True, validation_alias="ENABLE_MODEL_THINKING"
@@ -205,10 +213,10 @@ class Settings(BaseSettings):
 
     # ==================== HTTP Client Timeouts ====================
     http_read_timeout: float = Field(
-        default=120.0, validation_alias="HTTP_READ_TIMEOUT"
+        default=60.0, validation_alias="HTTP_READ_TIMEOUT"
     )
     http_write_timeout: float = Field(
-        default=10.0, validation_alias="HTTP_WRITE_TIMEOUT"
+        default=15.0, validation_alias="HTTP_WRITE_TIMEOUT"
     )
     http_connect_timeout: float = Field(
         default=HTTP_CONNECT_TIMEOUT_DEFAULT,

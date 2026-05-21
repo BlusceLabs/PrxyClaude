@@ -1,6 +1,7 @@
 """Re-exports default upstream base URLs from the config provider catalog."""
 
 from config.provider_catalog import (
+    ANTHROPIC_DEFAULT_BASE,
     CF_GATEWAY_V1_DEFAULT_BASE,
     DEEPSEEK_ANTHROPIC_DEFAULT_BASE,
     DEEPSEEK_DEFAULT_BASE,
@@ -10,11 +11,13 @@ from config.provider_catalog import (
     LMSTUDIO_DEFAULT_BASE,
     NVIDIA_NIM_DEFAULT_BASE,
     OLLAMA_DEFAULT_BASE,
+    OPENAI_DEFAULT_BASE,
     OPENROUTER_DEFAULT_BASE,
     ZAI_DEFAULT_BASE,
 )
 
 __all__ = (
+    "ANTHROPIC_DEFAULT_BASE",
     "CF_GATEWAY_V1_DEFAULT_BASE",
     "DEEPSEEK_ANTHROPIC_DEFAULT_BASE",
     "DEEPSEEK_DEFAULT_BASE",
@@ -24,6 +27,7 @@ __all__ = (
     "LMSTUDIO_DEFAULT_BASE",
     "NVIDIA_NIM_DEFAULT_BASE",
     "OLLAMA_DEFAULT_BASE",
+    "OPENAI_DEFAULT_BASE",
     "OPENROUTER_DEFAULT_BASE",
     "ZAI_DEFAULT_BASE",
 )
