@@ -1,6 +1,7 @@
 """Re-exports default upstream base URLs from the config provider catalog."""
 
 from config.provider_catalog import (
+    CF_GATEWAY_V1_DEFAULT_BASE,
     DEEPSEEK_ANTHROPIC_DEFAULT_BASE,
     DEEPSEEK_DEFAULT_BASE,
     KIMI_DEFAULT_BASE,
@@ -9,9 +10,11 @@ from config.provider_catalog import (
     NVIDIA_NIM_DEFAULT_BASE,
     OLLAMA_DEFAULT_BASE,
     OPENROUTER_DEFAULT_BASE,
+    ZAI_DEFAULT_BASE,
 )
 
 __all__ = (
+    "CF_GATEWAY_V1_DEFAULT_BASE",
     "DEEPSEEK_ANTHROPIC_DEFAULT_BASE",
     "DEEPSEEK_DEFAULT_BASE",
     "KIMI_DEFAULT_BASE",
@@ -20,4 +23,5 @@ __all__ = (
     "NVIDIA_NIM_DEFAULT_BASE",
     "OLLAMA_DEFAULT_BASE",
     "OPENROUTER_DEFAULT_BASE",
+    "ZAI_DEFAULT_BASE",
 )

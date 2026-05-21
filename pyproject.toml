@@ -26,7 +26,7 @@ dependencies = [
 
 [project.scripts]
 PxyClaude = "cli.entrypoints:serve"
-fcc-init = "cli.entrypoints:init"
+proxycc-init = "cli.entrypoints:init"
 
 [project.optional-dependencies]
 voice = [
@@ -110,7 +110,7 @@ markers = [
     "clients: client compatibility checks",
     "voice: voice transcription checks",
     "contract: deterministic feature contract checks",
-    "smoke_target(name): route a smoke test behind FCC_SMOKE_TARGETS",
+    "smoke_target(name): route a smoke test behind PROXYCC_SMOKE_TARGETS",
 ]
 
 [tool.ty.environment]

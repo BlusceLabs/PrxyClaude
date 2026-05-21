@@ -42,7 +42,7 @@ def serve() -> None:
 
 
 def init() -> None:
-    """Scaffold config at ~/.config/PxyClaude/.env (registered as `fcc-init`)."""
+    """Scaffold config at ~/.config/PxyClaude/.env (registered as `proxycc-init`)."""
     config_dir = Path.home() / ".config" / "PxyClaude"
     env_file = config_dir / ".env"
 

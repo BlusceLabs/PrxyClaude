@@ -235,7 +235,7 @@ CAPABILITY_CONTRACTS: tuple[CapabilityContract, ...] = (
         "env_precedence",
         "config_env_precedence",
         "config.settings.Settings",
-        "process env, user env file, repo env file, FCC_ENV_FILE",
+        "process env, user env file, repo env file, PROXYCC_ENV_FILE",
         "deterministic settings values",
         "validation error for invalid settings",
         ("tests/config/test_config.py",),
@@ -398,7 +398,7 @@ CAPABILITY_CONTRACTS: tuple[CapabilityContract, ...] = (
         "process cleanup in finally",
         ("tests/cli/test_entrypoints.py",),
         (
-            "test_fcc_init_scaffolds_user_config",
+            "test_proxycc_init_scaffolds_user_config",
             "test_free_claude_code_entrypoint_starts_server",
         ),
     ),

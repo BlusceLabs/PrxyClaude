@@ -75,7 +75,7 @@ def test_provider_disconnect_e2e(smoke_config: SmokeConfig) -> None:
 
 def test_provider_error_e2e(smoke_config: SmokeConfig) -> None:
     provider_model = ProviderMatrixDriver(smoke_config).first_model()
-    broken_model = f"{provider_model.provider}/fcc-smoke-missing-model"
+    broken_model = f"{provider_model.provider}/proxycc-smoke-missing-model"
     with (
         SmokeServerDriver(
             smoke_config,
@@ -87,7 +87,7 @@ def test_provider_error_e2e(smoke_config: SmokeConfig) -> None:
             f"{server.base_url}/v1/messages",
             headers=auth_headers(),
             json={
-                "model": "fcc-smoke-default",
+                "model": "proxycc-smoke-default",
                 "max_tokens": 32,
                 "messages": [{"role": "user", "content": "hello"}],
             },
@@ -392,7 +392,7 @@ def _scenario_disconnect(
             f"{server.base_url}/v1/messages",
             headers=auth_headers(),
             json={
-                "model": "fcc-smoke-default",
+                "model": "proxycc-smoke-default",
                 "max_tokens": 512,
                 "messages": [{"role": "user", "content": smoke_config.prompt}],
             },

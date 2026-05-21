@@ -36,9 +36,9 @@ def cmd_uvicorn_server_app(
     ]
 
 
-def cmd_fcc_init() -> list[str]:
+def cmd_proxycc_init() -> list[str]:
     return [python_exe(), "-c", "from cli.entrypoints import init; init()"]
 
 
-def cmd_free_claude_code_serve() -> list[str]:
+def cmd_proxycc_serve() -> list[str]:
     return [python_exe(), "-c", "from cli.entrypoints import serve; serve()"]

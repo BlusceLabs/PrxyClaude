@@ -32,7 +32,7 @@ def _env_files() -> tuple[Path, ...]:
         Path.home() / ".config" / "PxyClaude" / ".env",
         Path(".env"),
     ]
-    if explicit := os.environ.get("FCC_ENV_FILE"):
+    if explicit := os.environ.get("PROXYCC_ENV_FILE"):
         files.append(Path(explicit))
     return tuple(files)
 
@@ -115,6 +115,16 @@ class Settings(BaseSettings):
     # ==================== Kimi Config ====================
     kimi_api_key: str = Field(default="", validation_alias="KIMI_API_KEY")
 
+    # ==================== Z.ai Config ====================
+    z_ai_api_key: str = Field(default="", validation_alias="ZAI_API_KEY")
+
+    # ==================== Cloudflare AI Gateway Config ====================
+    cf_gateway_base_url: str = Field(
+        default="https://gateway.ai.cloudflare.com/v1/ACCOUNT_ID/GATEWAY_NAME/anthropic/v1",
+        validation_alias="CF_GATEWAY_BASE_URL",
+    )
+    cf_aig_token: str = Field(default="", validation_alias="CF_AIG_TOKEN")
+
     # ==================== Messaging Platform Selection ====================
     # Valid: "telegram" | "discord" | "none"
     messaging_platform: str = Field(
@@ -165,6 +175,8 @@ class Settings(BaseSettings):
     lmstudio_proxy: str = Field(default="", validation_alias="LMSTUDIO_PROXY")
     llamacpp_proxy: str = Field(default="", validation_alias="LLAMACPP_PROXY")
     kimi_proxy: str = Field(default="", validation_alias="KIMI_PROXY")
+    z_ai_proxy: str = Field(default="", validation_alias="ZAI_PROXY")
+    cf_gateway_proxy: str = Field(default="", validation_alias="CF_GATEWAY_PROXY")
 
     # ==================== Provider Rate Limiting ====================
     provider_rate_limit: int = Field(default=40, validation_alias="PROVIDER_RATE_LIMIT")

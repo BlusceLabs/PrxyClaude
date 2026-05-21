@@ -664,7 +664,7 @@ class TestPerModelMapping:
         """Startup validation model collection is limited to configured chat refs."""
         from config.settings import Settings
 
-        monkeypatch.setenv("FCC_SMOKE_MODEL_NVIDIA_NIM", "nvidia_nim/smoke")
+        monkeypatch.setenv("PROXYCC_SMOKE_MODEL_NVIDIA_NIM", "nvidia_nim/smoke")
         monkeypatch.setenv("WHISPER_MODEL", "openai/whisper-large-v3")
         s = Settings()
         s.model = "nvidia_nim/fallback"

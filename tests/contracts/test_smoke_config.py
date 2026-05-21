@@ -37,7 +37,7 @@ def _smoke_config(**overrides) -> SmokeConfig:
         "targets": DEFAULT_TARGETS,
         "provider_matrix": frozenset(),
         "timeout_s": 45.0,
-        "prompt": "Reply with exactly: FCC_SMOKE_PONG",
+        "prompt": "Reply with exactly: PROXYCC_SMOKE_PONG",
         "claude_bin": "claude",
         "worker_id": "main",
         "settings": _settings(),
@@ -67,7 +67,7 @@ def test_ollama_provider_matrix_filters_models() -> None:
 def test_provider_smoke_models_cover_configured_providers_independent_of_model_mapping(
     monkeypatch,
 ) -> None:
-    monkeypatch.delenv("FCC_SMOKE_MODEL_DEEPSEEK", raising=False)
+    monkeypatch.delenv("PROXYCC_SMOKE_MODEL_DEEPSEEK", raising=False)
     config = _smoke_config(
         settings=_settings(
             model="ollama/llama3.1",
@@ -86,7 +86,7 @@ def test_provider_smoke_models_cover_configured_providers_independent_of_model_m
 def test_provider_smoke_model_override_accepts_model_name_without_prefix(
     monkeypatch,
 ) -> None:
-    monkeypatch.setenv("FCC_SMOKE_MODEL_DEEPSEEK", "deepseek-reasoner")
+    monkeypatch.setenv("PROXYCC_SMOKE_MODEL_DEEPSEEK", "deepseek-reasoner")
     config = _smoke_config(
         settings=_settings(
             deepseek_api_key="deepseek-key",
@@ -98,13 +98,13 @@ def test_provider_smoke_model_override_accepts_model_name_without_prefix(
     models = config.provider_smoke_models()
 
     assert models[0].full_model == "deepseek/deepseek-reasoner"
-    assert models[0].source == "FCC_SMOKE_MODEL_DEEPSEEK"
+    assert models[0].source == "PROXYCC_SMOKE_MODEL_DEEPSEEK"
 
 
 def test_provider_smoke_model_override_accepts_owner_model_name(
     monkeypatch,
 ) -> None:
-    monkeypatch.setenv("FCC_SMOKE_MODEL_NVIDIA_NIM", "z-ai/glm4.7")
+    monkeypatch.setenv("PROXYCC_SMOKE_MODEL_NVIDIA_NIM", "z-ai/glm4.7")
     config = _smoke_config(
         settings=_settings(
             model="deepseek/deepseek-chat",
@@ -118,13 +118,13 @@ def test_provider_smoke_model_override_accepts_owner_model_name(
     models = config.provider_smoke_models()
 
     assert models[0].full_model == "nvidia_nim/z-ai/glm4.7"
-    assert models[0].source == "FCC_SMOKE_MODEL_NVIDIA_NIM"
+    assert models[0].source == "PROXYCC_SMOKE_MODEL_NVIDIA_NIM"
 
 
 def test_provider_smoke_model_override_rejects_wrong_provider_prefix(
     monkeypatch,
 ) -> None:
-    monkeypatch.setenv("FCC_SMOKE_MODEL_DEEPSEEK", "ollama/llama3.1")
+    monkeypatch.setenv("PROXYCC_SMOKE_MODEL_DEEPSEEK", "ollama/llama3.1")
     config = _smoke_config(
         settings=_settings(
             deepseek_api_key="deepseek-key",
@@ -136,13 +136,13 @@ def test_provider_smoke_model_override_rejects_wrong_provider_prefix(
     try:
         config.provider_smoke_models()
     except ValueError as exc:
-        assert "FCC_SMOKE_MODEL_DEEPSEEK" in str(exc)
+        assert "PROXYCC_SMOKE_MODEL_DEEPSEEK" in str(exc)
     else:
         raise AssertionError("expected wrong provider prefix to fail")
 
 
 def test_provider_smoke_matrix_filters_provider_catalog(monkeypatch) -> None:
-    monkeypatch.delenv("FCC_SMOKE_MODEL_DEEPSEEK", raising=False)
+    monkeypatch.delenv("PROXYCC_SMOKE_MODEL_DEEPSEEK", raising=False)
     config = _smoke_config(
         settings=_settings(
             deepseek_api_key="deepseek-key",
@@ -160,7 +160,7 @@ def test_provider_smoke_matrix_filters_provider_catalog(monkeypatch) -> None:
 def test_provider_smoke_includes_local_provider_when_model_mapping_uses_it(
     monkeypatch,
 ) -> None:
-    monkeypatch.delenv("FCC_SMOKE_MODEL_OLLAMA", raising=False)
+    monkeypatch.delenv("PROXYCC_SMOKE_MODEL_OLLAMA", raising=False)
     config = _smoke_config()
 
     assert [model.provider for model in config.provider_smoke_models()] == ["ollama"]
@@ -169,7 +169,7 @@ def test_provider_smoke_includes_local_provider_when_model_mapping_uses_it(
 def test_provider_smoke_does_not_include_default_local_urls_when_unmapped(
     monkeypatch,
 ) -> None:
-    monkeypatch.delenv("FCC_SMOKE_MODEL_OLLAMA", raising=False)
+    monkeypatch.delenv("PROXYCC_SMOKE_MODEL_OLLAMA", raising=False)
     config = _smoke_config(settings=_settings(model="nvidia_nim/test"))
 
     assert config.provider_smoke_models() == []

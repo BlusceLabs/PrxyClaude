@@ -1,4 +1,4 @@
-"""Tests for cli/entrypoints.py — fcc-init scaffolding logic."""
+"""Tests for cli/entrypoints.py — proxycc-init scaffolding logic."""
 
 from pathlib import Path
 from unittest.mock import patch

@@ -22,6 +22,11 @@ OPENROUTER_DEFAULT_BASE = "https://openrouter.ai/api/v1"
 LMSTUDIO_DEFAULT_BASE = "http://localhost:1234/v1"
 LLAMACPP_DEFAULT_BASE = "http://localhost:8080/v1"
 OLLAMA_DEFAULT_BASE = "http://localhost:11434"
+ZAI_DEFAULT_BASE = "https://api.z.ai/api/paas/v4"
+# Cloudflare AI Gateway — user must replace ACCOUNT_ID and GATEWAY_NAME.
+CF_GATEWAY_V1_DEFAULT_BASE = (
+    "https://gateway.ai.cloudflare.com/v1/ACCOUNT_ID/GATEWAY_NAME/anthropic/v1"
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,6 +117,27 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         default_base_url=KIMI_DEFAULT_BASE,
         proxy_attr="kimi_proxy",
         capabilities=("chat", "streaming", "tools"),
+    ),
+    "z_ai": ProviderDescriptor(
+        provider_id="z_ai",
+        transport_type="openai_chat",
+        credential_env="ZAI_API_KEY",
+        credential_url="https://z.ai/manage-apikey/apikey-list",
+        credential_attr="z_ai_api_key",
+        default_base_url=ZAI_DEFAULT_BASE,
+        proxy_attr="z_ai_proxy",
+        capabilities=("chat", "streaming", "tools"),
+    ),
+    "cloudflare_gateway": ProviderDescriptor(
+        provider_id="cloudflare_gateway",
+        transport_type="anthropic_messages",
+        credential_env="CF_AIG_TOKEN",
+        credential_url="https://dash.cloudflare.com/profile/api-tokens",
+        credential_attr="cf_aig_token",
+        default_base_url=CF_GATEWAY_V1_DEFAULT_BASE,
+        base_url_attr="cf_gateway_base_url",
+        proxy_attr="cf_gateway_proxy",
+        capabilities=("chat", "streaming", "tools", "thinking", "native_anthropic"),
     ),
 }
 

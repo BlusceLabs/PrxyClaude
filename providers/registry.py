@@ -74,6 +74,20 @@ def _create_kimi(config: ProviderConfig, _settings: Settings) -> BaseProvider:
     return KimiProvider(config)
 
 
+def _create_z_ai(config: ProviderConfig, _settings: Settings) -> BaseProvider:
+    from providers.z_ai import ZAIProvider
+
+    return ZAIProvider(config)
+
+
+def _create_cloudflare_gateway(
+    config: ProviderConfig, _settings: Settings
+) -> BaseProvider:
+    from providers.cloudflare_gateway import CloudflareGatewayProvider
+
+    return CloudflareGatewayProvider(config)
+
+
 PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "nvidia_nim": _create_nvidia_nim,
     "open_router": _create_open_router,
@@ -82,6 +96,8 @@ PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "llamacpp": _create_llamacpp,
     "ollama": _create_ollama,
     "kimi": _create_kimi,
+    "z_ai": _create_z_ai,
+    "cloudflare_gateway": _create_cloudflare_gateway,
 }
 
 if set(PROVIDER_DESCRIPTORS) != set(SUPPORTED_PROVIDER_IDS) or set(

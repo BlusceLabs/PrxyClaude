@@ -93,12 +93,12 @@ uv run uvicorn server:app --host 0.0.0.0 --port 8082
 Package install alternative:
 
 ```bash
-uv tool install git+https://github.com/BlusceLabs/PxyClaudegit
-fcc-init
+uv tool install git+https://github.com/BlusceLabs/PxyClaude.git
+proxycc-init
 PxyClaude
 ```
 
-`fcc-init` creates `~/.config/PxyClaude/.env` from the bundled template.
+`proxycc-init` creates `~/.config/PxyClaude/.env` from the bundled template.
 
 ### 4. Run Claude Code
 
@@ -526,7 +526,7 @@ Run them in that order before pushing. CI enforces the same checks.
 `pyproject.toml` installs:
 
 - `ProxyClaude`: starts the proxy with configured host and port.
-- `fcc-init`: creates the user config template at `~/.config/ProxyClaude/.env`.
+- `proxycc-init`: creates the user config template at `~/.config/ProxyClaude/.env`.
 
 ### Extending
 
@@ -537,7 +537,7 @@ Run them in that order before pushing. CI enforces the same checks.
 
 ## Contributing
 
-- Report bugs and feature requests in [Issues](https://github.com/Alishahryar1/ProxyClaude/issues).
+- Report bugs and feature requests in [Issues](https://github.com/BlusceLabs/ProxyClaude/issues).
 - Keep changes small and covered by focused tests.
 - Do not open Docker integration PRs.
 - Do not open README change PRs just open an issue for it.

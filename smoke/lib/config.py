@@ -50,12 +50,12 @@ PROVIDER_SMOKE_DEFAULT_MODELS: dict[str, str] = {
 TARGET_REQUIRED_ENV: dict[str, tuple[str, ...]] = {
     "api": (),
     "auth": (),
-    "cli": ("FCC_SMOKE_CLAUDE_BIN", "configured provider for Claude CLI prompt"),
+    "cli": ("PROXYCC_SMOKE_CLAUDE_BIN", "configured provider for Claude CLI prompt"),
     "clients": (),
     "config": (),
     "extensibility": (),
     "messaging": (),
-    "providers": ("configured provider credentials/endpoints or FCC_SMOKE_MODEL_*",),
+    "providers": ("configured provider credentials/endpoints or PROXYCC_SMOKE_MODEL_*",),
     "rate_limit": ("configured provider model",),
     "tools": ("configured tool-capable provider model",),
     "lmstudio": ("LM_STUDIO_BASE_URL with a running LM Studio server",),
@@ -63,13 +63,13 @@ TARGET_REQUIRED_ENV: dict[str, tuple[str, ...]] = {
     "ollama": ("OLLAMA_BASE_URL with a running Ollama server",),
     "telegram": (
         "TELEGRAM_BOT_TOKEN",
-        "ALLOWED_TELEGRAM_USER_ID or FCC_SMOKE_TELEGRAM_CHAT_ID",
+        "ALLOWED_TELEGRAM_USER_ID or PROXYCC_SMOKE_TELEGRAM_CHAT_ID",
     ),
     "discord": (
         "DISCORD_BOT_TOKEN",
-        "ALLOWED_DISCORD_CHANNELS or FCC_SMOKE_DISCORD_CHANNEL_ID",
+        "ALLOWED_DISCORD_CHANNELS or PROXYCC_SMOKE_DISCORD_CHANNEL_ID",
     ),
-    "voice": ("VOICE_NOTE_ENABLED=true", "FCC_SMOKE_RUN_VOICE=1"),
+    "voice": ("VOICE_NOTE_ENABLED=true", "PROXYCC_SMOKE_RUN_VOICE=1"),
 }
 
 
@@ -106,13 +106,13 @@ class SmokeConfig:
         return cls(
             root=root,
             results_dir=root / ".smoke-results",
-            live=os.getenv("FCC_LIVE_SMOKE") == "1",
-            interactive=os.getenv("FCC_SMOKE_INTERACTIVE") == "1",
-            targets=_parse_targets(os.getenv("FCC_SMOKE_TARGETS")),
-            provider_matrix=_parse_csv(os.getenv("FCC_SMOKE_PROVIDER_MATRIX")),
-            timeout_s=float(os.getenv("FCC_SMOKE_TIMEOUT_S", "45")),
-            prompt=os.getenv("FCC_SMOKE_PROMPT", "Reply with exactly: FCC_SMOKE_PONG"),
-            claude_bin=os.getenv("FCC_SMOKE_CLAUDE_BIN", "claude"),
+            live=os.getenv("PROXYCC_LIVE_SMOKE") == "1",
+            interactive=os.getenv("PROXYCC_SMOKE_INTERACTIVE") == "1",
+            targets=_parse_targets(os.getenv("PROXYCC_SMOKE_TARGETS")),
+            provider_matrix=_parse_csv(os.getenv("PROXYCC_SMOKE_PROVIDER_MATRIX")),
+            timeout_s=float(os.getenv("PROXYCC_SMOKE_TIMEOUT_S", "45")),
+            prompt=os.getenv("PROXYCC_SMOKE_PROMPT", "Reply with exactly: PROXYCC_SMOKE_PONG"),
+            claude_bin=os.getenv("PROXYCC_SMOKE_CLAUDE_BIN", "claude"),
             worker_id=os.getenv("PYTEST_XDIST_WORKER", "main"),
             settings=settings,
         )
@@ -170,7 +170,7 @@ class SmokeConfig:
             return True
         if self.provider_matrix and provider in self.provider_matrix:
             return True
-        return bool(os.getenv(f"FCC_SMOKE_MODEL_{provider.upper()}"))
+        return bool(os.getenv(f"PROXYCC_SMOKE_MODEL_{provider.upper()}"))
 
     def has_provider_configuration(self, provider: str) -> bool:
         if provider == "nvidia_nim":
@@ -204,7 +204,7 @@ def _parse_targets(raw: str | None) -> frozenset[str]:
 
 
 def _provider_smoke_model(provider: str) -> tuple[str, str]:
-    override_env = f"FCC_SMOKE_MODEL_{provider.upper()}"
+    override_env = f"PROXYCC_SMOKE_MODEL_{provider.upper()}"
     if override := os.getenv(override_env):
         return _normalize_provider_model(provider, override), override_env
 
@@ -218,7 +218,7 @@ def _provider_smoke_model(provider: str) -> tuple[str, str]:
 def _normalize_provider_model(provider: str, raw_model: str) -> str:
     model = raw_model.strip()
     if not model:
-        msg = f"FCC_SMOKE_MODEL_{provider.upper()} must not be empty"
+        msg = f"PROXYCC_SMOKE_MODEL_{provider.upper()} must not be empty"
         raise ValueError(msg)
     if "/" not in model:
         return f"{provider}/{model}"
@@ -227,7 +227,7 @@ def _normalize_provider_model(provider: str, raw_model: str) -> str:
         return model
     if prefix in SUPPORTED_PROVIDER_IDS:
         msg = (
-            f"FCC_SMOKE_MODEL_{provider.upper()} must use provider prefix "
+            f"PROXYCC_SMOKE_MODEL_{provider.upper()} must use provider prefix "
             f"{provider!r}, got {model!r}"
         )
         raise ValueError(msg)

@@ -61,7 +61,7 @@ FEATURE_INVENTORY: tuple[FeatureCoverage, ...] = (
         ("test_provider_text_multiturn_e2e",),
         ("providers",),
         ("configured provider credentials or local provider endpoint",),
-        "missing providers are missing_env unless FCC_ALLOW_NO_PROVIDER_SMOKE=1",
+        "missing providers are missing_env unless PROXYCC_ALLOW_NO_PROVIDER_SMOKE=1",
     ),
     FeatureCoverage(
         "drop_in_claude_code_replacement",
@@ -76,7 +76,7 @@ FEATURE_INVENTORY: tuple[FeatureCoverage, ...] = (
             "test_jetbrains_protocol_e2e",
         ),
         ("api", "cli", "clients"),
-        ("configured provider", "FCC_SMOKE_CLAUDE_BIN for real Claude CLI"),
+        ("configured provider", "PROXYCC_SMOKE_CLAUDE_BIN for real Claude CLI"),
         "skip real CLI when binary is absent; configured providers must pass",
     ),
     FeatureCoverage(
@@ -87,7 +87,7 @@ FEATURE_INVENTORY: tuple[FeatureCoverage, ...] = (
         ("test_configured_provider_models_stream_successfully",),
         ("test_provider_matrix_presence_e2e", "test_provider_text_multiturn_e2e"),
         ("providers",),
-        ("configured provider credentials/endpoints", "optional FCC_SMOKE_MODEL_*"),
+        ("configured provider credentials/endpoints", "optional PROXYCC_SMOKE_MODEL_*"),
         "selected providers missing credentials are failing missing_env",
     ),
     FeatureCoverage(
@@ -269,7 +269,7 @@ FEATURE_INVENTORY: tuple[FeatureCoverage, ...] = (
             "test_voice_nim_backend_e2e",
         ),
         ("messaging", "voice"),
-        ("VOICE_NOTE_ENABLED", "FCC_SMOKE_RUN_VOICE", "WHISPER_DEVICE"),
+        ("VOICE_NOTE_ENABLED", "PROXYCC_SMOKE_RUN_VOICE", "WHISPER_DEVICE"),
         "fake cancellation is required; backend transcription is opt-in",
     ),
     FeatureCoverage(
@@ -367,7 +367,7 @@ FEATURE_INVENTORY: tuple[FeatureCoverage, ...] = (
         "public_surface",
         ("tests/cli/test_entrypoints.py",),
         (
-            "test_fcc_init_scaffolds_user_config",
+            "test_proxycc_init_scaffolds_user_config",
             "test_free_claude_code_entrypoint_starts_server",
         ),
         ("test_entrypoint_init_e2e", "test_entrypoint_server_e2e"),
@@ -386,7 +386,7 @@ FEATURE_INVENTORY: tuple[FeatureCoverage, ...] = (
             "test_claude_cli_multiturn_tool_protocol_e2e",
         ),
         ("cli",),
-        ("FCC_SMOKE_CLAUDE_BIN", "configured provider"),
+        ("PROXYCC_SMOKE_CLAUDE_BIN", "configured provider"),
         "skip only when Claude CLI binary is absent",
     ),
     FeatureCoverage(
@@ -441,7 +441,7 @@ FEATURE_INVENTORY: tuple[FeatureCoverage, ...] = (
     ),
     FeatureCoverage(
         "config_env_precedence",
-        "FCC_ENV_FILE, dotenv, and process env precedence are deterministic",
+        "PROXYCC_ENV_FILE, dotenv, and process env precedence are deterministic",
         "public_surface",
         ("tests/config/test_config.py",),
         (),
