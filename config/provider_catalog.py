@@ -23,6 +23,7 @@ LMSTUDIO_DEFAULT_BASE = "http://localhost:1234/v1"
 LLAMACPP_DEFAULT_BASE = "http://localhost:8080/v1"
 OLLAMA_DEFAULT_BASE = "http://localhost:11434"
 ZAI_DEFAULT_BASE = "https://api.z.ai/api/paas/v4"
+GEMINI_DEFAULT_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
 # Cloudflare AI Gateway — user must replace ACCOUNT_ID and GATEWAY_NAME.
 CF_GATEWAY_V1_DEFAULT_BASE = (
     "https://gateway.ai.cloudflare.com/v1/ACCOUNT_ID/GATEWAY_NAME/anthropic/v1"
@@ -138,6 +139,16 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         base_url_attr="cf_gateway_base_url",
         proxy_attr="cf_gateway_proxy",
         capabilities=("chat", "streaming", "tools", "thinking", "native_anthropic"),
+    ),
+    "gemini": ProviderDescriptor(
+        provider_id="gemini",
+        transport_type="openai_chat",
+        credential_env="GEMINI_API_KEY",
+        credential_url="https://aistudio.google.com/apikey",
+        credential_attr="gemini_api_key",
+        default_base_url=GEMINI_DEFAULT_BASE,
+        proxy_attr="gemini_proxy",
+        capabilities=("chat", "streaming", "tools", "thinking"),
     ),
 }
 

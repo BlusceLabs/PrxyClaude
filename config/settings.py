@@ -125,6 +125,9 @@ class Settings(BaseSettings):
     )
     cf_aig_token: str = Field(default="", validation_alias="CF_AIG_TOKEN")
 
+    # ==================== Gemini Config ====================
+    gemini_api_key: str = Field(default="", validation_alias="GEMINI_API_KEY")
+
     # ==================== Messaging Platform Selection ====================
     # Valid: "telegram" | "discord" | "none"
     messaging_platform: str = Field(
@@ -177,6 +180,7 @@ class Settings(BaseSettings):
     kimi_proxy: str = Field(default="", validation_alias="KIMI_PROXY")
     z_ai_proxy: str = Field(default="", validation_alias="ZAI_PROXY")
     cf_gateway_proxy: str = Field(default="", validation_alias="CF_GATEWAY_PROXY")
+    gemini_proxy: str = Field(default="", validation_alias="GEMINI_PROXY")
 
     # ==================== Provider Rate Limiting ====================
     provider_rate_limit: int = Field(default=40, validation_alias="PROVIDER_RATE_LIMIT")

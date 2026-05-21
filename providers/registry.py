@@ -88,6 +88,12 @@ def _create_cloudflare_gateway(
     return CloudflareGatewayProvider(config)
 
 
+def _create_gemini(config: ProviderConfig, _settings: Settings) -> BaseProvider:
+    from providers.gemini import GeminiProvider
+
+    return GeminiProvider(config)
+
+
 PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "nvidia_nim": _create_nvidia_nim,
     "open_router": _create_open_router,
@@ -98,6 +104,7 @@ PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "kimi": _create_kimi,
     "z_ai": _create_z_ai,
     "cloudflare_gateway": _create_cloudflare_gateway,
+    "gemini": _create_gemini,
 }
 
 if set(PROVIDER_DESCRIPTORS) != set(SUPPORTED_PROVIDER_IDS) or set(
