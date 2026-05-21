@@ -2,24 +2,22 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import Any
 
 from providers.base import ProviderConfig
 from providers.defaults import ZAI_DEFAULT_BASE
-from providers.model_listing import ProviderModelInfo
+from providers.model_listing import ProviderModelInfo, model_infos_from_ids
 from providers.openai_compat import OpenAIChatTransport
 
 from .request import build_request_body
 
+# z.ai accepts model names in /chat/completions that are not listed in /models.
+# Known -flash variants accepted at inference time:
+_KNOWN_FLASH_VARIANTS = frozenset({"glm-4.5-flash", "glm-4.7-flash"})
+
 
 class ZAIProvider(OpenAIChatTransport):
-    """Z.ai provider using the OpenAI-compatible chat completions API.
-
-    Model listing is disabled — z.ai does not reliably expose all deployable
-    models through the OpenAI ``/models`` endpoint. Set your model directly
-    in ``MODEL=z_ai/<model-name>``.
-    """
+    """Z.ai provider using the OpenAI-compatible chat completions API."""
 
     def __init__(self, config: ProviderConfig):
         super().__init__(
@@ -38,7 +36,17 @@ class ZAIProvider(OpenAIChatTransport):
         )
 
     async def list_model_ids(self) -> frozenset[str]:
-        return frozenset()
+        """Return advertised model ids plus known -flash inference variants."""
+        try:
+            base = await super().list_model_ids()
+        except Exception:
+            base = frozenset()
+        return base | _KNOWN_FLASH_VARIANTS
 
     async def list_model_infos(self) -> frozenset[ProviderModelInfo]:
-        return frozenset()
+        """Return model infos including known -flash variants."""
+        try:
+            base = await super().list_model_infos()
+        except Exception:
+            base = frozenset()
+        return base | model_infos_from_ids(_KNOWN_FLASH_VARIANTS)
