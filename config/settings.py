@@ -134,6 +134,9 @@ class Settings(BaseSettings):
     # ==================== Anthropic Direct Config ====================
     anthropic_api_key: str = Field(default="", validation_alias="ANTHROPIC_API_KEY")
 
+    # ==================== SiliconFlow Config ====================
+    siliconflow_api_key: str = Field(default="", validation_alias="SILICONFLOW_API_KEY")
+
     # ==================== Messaging Platform Selection ====================
     # Valid: "telegram" | "discord" | "none"
     messaging_platform: str = Field(
@@ -189,6 +192,7 @@ class Settings(BaseSettings):
     gemini_proxy: str = Field(default="", validation_alias="GEMINI_PROXY")
     openai_proxy: str = Field(default="", validation_alias="OPENAI_PROXY")
     anthropic_proxy: str = Field(default="", validation_alias="ANTHROPIC_PROXY")
+    siliconflow_proxy: str = Field(default="", validation_alias="SILICONFLOW_PROXY")
 
     # ==================== Provider Rate Limiting ====================
     provider_rate_limit: int = Field(default=60, validation_alias="PROVIDER_RATE_LIMIT")

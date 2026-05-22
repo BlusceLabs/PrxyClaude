@@ -108,6 +108,12 @@ def _create_anthropic_direct(
     return AnthropicDirectProvider(config)
 
 
+def _create_siliconflow(config: ProviderConfig, _settings: Settings) -> BaseProvider:
+    from providers.siliconflow import SiliconFlowProvider
+
+    return SiliconFlowProvider(config)
+
+
 PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "nvidia_nim": _create_nvidia_nim,
     "open_router": _create_open_router,
@@ -121,6 +127,7 @@ PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "gemini": _create_gemini,
     "openai": _create_openai,
     "anthropic": _create_anthropic_direct,
+    "siliconflow": _create_siliconflow,
 }
 
 if set(PROVIDER_DESCRIPTORS) != set(SUPPORTED_PROVIDER_IDS) or set(

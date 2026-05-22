@@ -30,6 +30,7 @@ CF_GATEWAY_V1_DEFAULT_BASE = (
 )
 OPENAI_DEFAULT_BASE = "https://api.openai.com/v1"
 ANTHROPIC_DEFAULT_BASE = "https://api.anthropic.com/v1"
+SILICONFLOW_DEFAULT_BASE = "https://api.siliconflow.cn/v1"
 # Anthropic Direct API — sentinel: use ANTHROPIC_API_KEY.
 # Note: The provider_id is "anthropic" to avoid clashing with the
 # ``anthropic_messages`` transport name.
@@ -174,6 +175,16 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         default_base_url=ANTHROPIC_DEFAULT_BASE,
         proxy_attr="anthropic_proxy",
         capabilities=("chat", "streaming", "tools", "thinking", "native_anthropic"),
+    ),
+    "siliconflow": ProviderDescriptor(
+        provider_id="siliconflow",
+        transport_type="openai_chat",
+        credential_env="SILICONFLOW_API_KEY",
+        credential_url="https://cloud.siliconflow.cn/account/ak",
+        credential_attr="siliconflow_api_key",
+        default_base_url=SILICONFLOW_DEFAULT_BASE,
+        proxy_attr="siliconflow_proxy",
+        capabilities=("chat", "streaming", "tools"),
     ),
 }
 
