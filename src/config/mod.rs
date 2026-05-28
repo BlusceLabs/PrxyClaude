@@ -46,6 +46,15 @@ pub struct ProviderConfig {
     pub anthropic: AnthropicConfig,
     pub open_router: OpenRouterConfig,
     pub nvidia_nim: NvidiaNimConfig,
+    pub deepseek: SimpleProviderConfig,
+    pub kimi: SimpleProviderConfig,
+    pub llamacpp: SimpleProviderConfig,
+    pub lmstudio: SimpleProviderConfig,
+    pub fireworks: SimpleProviderConfig,
+    pub siliconflow: SimpleProviderConfig,
+    pub z_ai: SimpleProviderConfig,
+    pub gemini: SimpleProviderConfig,
+    pub ollama: SimpleProviderConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -71,6 +80,12 @@ pub struct OpenRouterConfig {
 pub struct NvidiaNimConfig {
     pub base_url: Option<String>,
     pub model_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SimpleProviderConfig {
+    pub api_key: Option<String>,
+    pub base_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -135,6 +150,15 @@ impl Default for Config {
                     base_url: None,
                     model_id: None,
                 },
+                deepseek: SimpleProviderConfig::default(),
+                kimi: SimpleProviderConfig::default(),
+                llamacpp: SimpleProviderConfig::default(),
+                lmstudio: SimpleProviderConfig::default(),
+                fireworks: SimpleProviderConfig::default(),
+                siliconflow: SimpleProviderConfig::default(),
+                z_ai: SimpleProviderConfig::default(),
+                gemini: SimpleProviderConfig::default(),
+                ollama: SimpleProviderConfig::default(),
             },
             features: FeatureConfig {
                 web_tools_enabled: true,
@@ -163,97 +187,149 @@ impl Default for Config {
 impl Config {
     pub fn load(path: &str) -> Result<Self, ConfigError> {
         let path = PathBuf::from(path);
-        
+
         if !path.exists() {
             return Err(ConfigError::FileNotFound(path));
         }
-        
-        let content = std::fs::read_to_string(&path)
-            .map_err(|e| ConfigError::ParseError(e.to_string()))?;
-        
-        let mut config: Config = toml::from_str(&content)
-            .map_err(|e| ConfigError::ParseError(e.to_string()))?;
-        
-        // Override with environment variables
+
+        let content =
+            std::fs::read_to_string(&path).map_err(|e| ConfigError::ParseError(e.to_string()))?;
+
+        let mut config: Config =
+            toml::from_str(&content).map_err(|e| ConfigError::ParseError(e.to_string()))?;
+
         config.load_env_vars();
-        
+
         Ok(config)
     }
-    
+
     fn load_env_vars(&mut self) {
-        // Server configuration
         if let Ok(addr) = env::var("PXCLAUDE_ADDR") {
             self.server.addr = addr;
         }
-        
+
         if let Ok(level) = env::var("PXCLAUDE_LOG_LEVEL") {
             self.logging.level = level;
         }
-        
+
         if let Ok(log_file) = env::var("PXCLAUDE_LOG_FILE") {
             self.logging.file = Some(log_file);
         }
-        
-        // Feature configuration
+
         if let Ok(enabled) = env::var("ENABLE_WEB_SERVER_TOOLS") {
             self.features.web_tools_enabled = enabled.parse().unwrap_or(false);
         }
-        
+
         if let Ok(allow_private) = env::var("WEB_FETCH_EGRESS_ALLOW_PRIVATE_NETWORK") {
             self.features.web_fetch_egress_allow_private = allow_private.parse().unwrap_or(false);
         }
-        
+
         if let Ok(max_chars) = env::var("MAX_WEB_FETCH_CHARS") {
             self.features.max_web_fetch_chars = max_chars.parse().unwrap_or(24000);
         }
-        
-        // Provider configuration
+
         if let Ok(provider) = env::var("DEFAULT_PROVIDER") {
             self.providers.default_provider = provider;
         }
-        
+
         if let Ok(api_key) = env::var("OPENAI_API_KEY") {
             self.providers.openai.api_key = Some(api_key);
         }
-        
+
         if let Ok(api_key) = env::var("ANTHROPIC_API_KEY") {
             self.providers.anthropic.api_key = Some(api_key);
         }
-        
+
         if let Ok(api_key) = env::var("OPEN_ROUTER_API_KEY") {
             self.providers.open_router.api_key = Some(api_key);
         }
-        
-        // Logging configuration
+
+        if let Ok(api_key) = env::var("DEEPSEEK_API_KEY") {
+            self.providers.deepseek.api_key = Some(api_key);
+        }
+
+        if let Ok(api_key) = env::var("KIMI_API_KEY") {
+            self.providers.kimi.api_key = Some(api_key);
+        }
+
+        if let Ok(api_key) = env::var("SILICONFLOW_API_KEY") {
+            self.providers.siliconflow.api_key = Some(api_key);
+        }
+
+        if let Ok(api_key) = env::var("FIREWORKS_API_KEY") {
+            self.providers.fireworks.api_key = Some(api_key);
+        }
+
+        if let Ok(api_key) = env::var("ZAI_API_KEY") {
+            self.providers.z_ai.api_key = Some(api_key);
+        }
+
+        if let Ok(api_key) = env::var("GEMINI_API_KEY") {
+            self.providers.gemini.api_key = Some(api_key);
+        }
+
+        if let Ok(base_url) = env::var("LLAMACPP_BASE_URL") {
+            self.providers.llamacpp.base_url = Some(base_url);
+        }
+
+        if let Ok(base_url) = env::var("LM_STUDIO_BASE_URL") {
+            self.providers.lmstudio.base_url = Some(base_url);
+        }
+
+        if let Ok(base_url) = env::var("OLLAMA_BASE_URL") {
+            self.providers.ollama.base_url = Some(base_url);
+        }
+
+        if let Ok(base_url) = env::var("NVIDIA_NIM_BASE_URL") {
+            self.providers.nvidia_nim.base_url = Some(base_url);
+        }
+
+        if let Ok(model_id) = env::var("NVIDIA_NIM_MODEL_ID") {
+            self.providers.nvidia_nim.model_id = Some(model_id);
+        }
+
         if let Ok(tracebacks) = env::var("LOG_API_ERROR_TRACEBACKS") {
             self.logging.error_tracebacks = tracebacks.parse().unwrap_or(false);
         }
-        
+
         if let Ok(raw_payloads) = env::var("LOG_RAW_API_PAYLOADS") {
             self.logging.raw_api_payloads = raw_payloads.parse().unwrap_or(false);
         }
     }
-    
+
     pub fn to_toml_string(&self) -> Result<String, ConfigError> {
-        toml::to_string_pretty(self)
-            .map_err(|e| ConfigError::ParseError(e.to_string()))
+        toml::to_string_pretty(self).map_err(|e| ConfigError::ParseError(e.to_string()))
     }
-    
+
     pub fn get_provider_api_key(&self, provider: &str) -> Option<String> {
         match provider {
             "openai" => self.providers.openai.api_key.clone(),
             "anthropic" => self.providers.anthropic.api_key.clone(),
             "open_router" => self.providers.open_router.api_key.clone(),
-            "nvidia_nim" => None, // NIM doesn't need API key
+            "deepseek" => self.providers.deepseek.api_key.clone(),
+            "kimi" => self.providers.kimi.api_key.clone(),
+            "siliconflow" => self.providers.siliconflow.api_key.clone(),
+            "fireworks" => self.providers.fireworks.api_key.clone(),
+            "z_ai" => self.providers.z_ai.api_key.clone(),
+            "gemini" => self.providers.gemini.api_key.clone(),
+            "nvidia_nim" => None,
+            "ollama" => self.providers.ollama.api_key.clone(),
             _ => None,
         }
     }
-    
+
     pub fn get_provider_base_url(&self, provider: &str) -> Option<String> {
         match provider {
             "openai" => self.providers.openai.base_url.clone(),
             "open_router" => Some(self.providers.open_router.base_url.clone()),
             "nvidia_nim" => self.providers.nvidia_nim.base_url.clone(),
+            "llamacpp" => self.providers.llamacpp.base_url.clone(),
+            "lmstudio" => self.providers.lmstudio.base_url.clone(),
+            "ollama" => self.providers.ollama.base_url.clone(),
+            "fireworks" => self.providers.fireworks.base_url.clone(),
+            "siliconflow" => self.providers.siliconflow.base_url.clone(),
+            "z_ai" => self.providers.z_ai.base_url.clone(),
+            "gemini" => self.providers.gemini.base_url.clone(),
             _ => None,
         }
     }
