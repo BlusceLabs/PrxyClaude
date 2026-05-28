@@ -30,7 +30,8 @@ CF_GATEWAY_V1_DEFAULT_BASE = (
 )
 OPENAI_DEFAULT_BASE = "https://api.openai.com/v1"
 ANTHROPIC_DEFAULT_BASE = "https://api.anthropic.com/v1"
-SILICONFLOW_DEFAULT_BASE = "https://api.siliconflow.cn/v1"
+SILICONFLOW_DEFAULT_BASE = "https://api.siliconflow.com/v1"
+FIREWORKS_DEFAULT_BASE = "https://api.fireworks.ai/inference/v1"
 # Anthropic Direct API — sentinel: use ANTHROPIC_API_KEY.
 # Note: The provider_id is "anthropic" to avoid clashing with the
 # ``anthropic_messages`` transport name.
@@ -184,6 +185,16 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         credential_attr="siliconflow_api_key",
         default_base_url=SILICONFLOW_DEFAULT_BASE,
         proxy_attr="siliconflow_proxy",
+        capabilities=("chat", "streaming", "tools"),
+    ),
+    "fireworks": ProviderDescriptor(
+        provider_id="fireworks",
+        transport_type="openai_chat",
+        credential_env="FIREWORKS_API_KEY",
+        credential_url="https://app.fireworks.ai/users/keys",
+        credential_attr="fireworks_api_key",
+        default_base_url=FIREWORKS_DEFAULT_BASE,
+        proxy_attr="fireworks_proxy",
         capabilities=("chat", "streaming", "tools"),
     ),
 }

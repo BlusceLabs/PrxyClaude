@@ -114,6 +114,12 @@ def _create_siliconflow(config: ProviderConfig, _settings: Settings) -> BaseProv
     return SiliconFlowProvider(config)
 
 
+def _create_fireworks(config: ProviderConfig, _settings: Settings) -> BaseProvider:
+    from providers.fireworks import FireworksProvider
+
+    return FireworksProvider(config)
+
+
 PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "nvidia_nim": _create_nvidia_nim,
     "open_router": _create_open_router,
@@ -128,6 +134,7 @@ PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "openai": _create_openai,
     "anthropic": _create_anthropic_direct,
     "siliconflow": _create_siliconflow,
+    "fireworks": _create_fireworks,
 }
 
 if set(PROVIDER_DESCRIPTORS) != set(SUPPORTED_PROVIDER_IDS) or set(

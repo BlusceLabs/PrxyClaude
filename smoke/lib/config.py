@@ -55,7 +55,9 @@ TARGET_REQUIRED_ENV: dict[str, tuple[str, ...]] = {
     "config": (),
     "extensibility": (),
     "messaging": (),
-    "providers": ("configured provider credentials/endpoints or PROXYCC_SMOKE_MODEL_*",),
+    "providers": (
+        "configured provider credentials/endpoints or PROXYCC_SMOKE_MODEL_*",
+    ),
     "rate_limit": ("configured provider model",),
     "tools": ("configured tool-capable provider model",),
     "lmstudio": ("LM_STUDIO_BASE_URL with a running LM Studio server",),
@@ -111,7 +113,9 @@ class SmokeConfig:
             targets=_parse_targets(os.getenv("PROXYCC_SMOKE_TARGETS")),
             provider_matrix=_parse_csv(os.getenv("PROXYCC_SMOKE_PROVIDER_MATRIX")),
             timeout_s=float(os.getenv("PROXYCC_SMOKE_TIMEOUT_S", "45")),
-            prompt=os.getenv("PROXYCC_SMOKE_PROMPT", "Reply with exactly: PROXYCC_SMOKE_PONG"),
+            prompt=os.getenv(
+                "PROXYCC_SMOKE_PROMPT", "Reply with exactly: PROXYCC_SMOKE_PONG"
+            ),
             claude_bin=os.getenv("PROXYCC_SMOKE_CLAUDE_BIN", "claude"),
             worker_id=os.getenv("PYTEST_XDIST_WORKER", "main"),
             settings=settings,

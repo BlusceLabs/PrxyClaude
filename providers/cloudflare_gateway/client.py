@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Iterator
+from collections.abc import Iterator
 from typing import Any
 
 from providers.anthropic_messages import AnthropicMessagesTransport, StreamChunkMode

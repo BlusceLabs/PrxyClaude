@@ -137,6 +137,9 @@ class Settings(BaseSettings):
     # ==================== SiliconFlow Config ====================
     siliconflow_api_key: str = Field(default="", validation_alias="SILICONFLOW_API_KEY")
 
+    # ==================== Fireworks Config ====================
+    fireworks_api_key: str = Field(default="", validation_alias="FIREWORKS_API_KEY")
+
     # ==================== Messaging Platform Selection ====================
     # Valid: "telegram" | "discord" | "none"
     messaging_platform: str = Field(
@@ -193,6 +196,7 @@ class Settings(BaseSettings):
     openai_proxy: str = Field(default="", validation_alias="OPENAI_PROXY")
     anthropic_proxy: str = Field(default="", validation_alias="ANTHROPIC_PROXY")
     siliconflow_proxy: str = Field(default="", validation_alias="SILICONFLOW_PROXY")
+    fireworks_proxy: str = Field(default="", validation_alias="FIREWORKS_PROXY")
 
     # ==================== Provider Rate Limiting ====================
     provider_rate_limit: int = Field(default=60, validation_alias="PROVIDER_RATE_LIMIT")
@@ -216,9 +220,7 @@ class Settings(BaseSettings):
     )
 
     # ==================== HTTP Client Timeouts ====================
-    http_read_timeout: float = Field(
-        default=60.0, validation_alias="HTTP_READ_TIMEOUT"
-    )
+    http_read_timeout: float = Field(default=60.0, validation_alias="HTTP_READ_TIMEOUT")
     http_write_timeout: float = Field(
         default=15.0, validation_alias="HTTP_WRITE_TIMEOUT"
     )

@@ -108,7 +108,9 @@ def test_discord_live_permissions_e2e(smoke_config: SmokeConfig) -> None:
 @pytest.mark.smoke_target("telegram")
 def test_telegram_live_manual_inbound_e2e(smoke_config: SmokeConfig) -> None:
     if not smoke_config.interactive:
-        pytest.skip("missing_env: set PROXYCC_SMOKE_INTERACTIVE=1 for manual inbound smoke")
+        pytest.skip(
+            "missing_env: set PROXYCC_SMOKE_INTERACTIVE=1 for manual inbound smoke"
+        )
     pytest.skip(
         "manual product smoke: send the printed nonce to Telegram and verify "
         "progress edits, final transcript, /stop, /clear, /stats, and voice note "
@@ -119,7 +121,9 @@ def test_telegram_live_manual_inbound_e2e(smoke_config: SmokeConfig) -> None:
 @pytest.mark.smoke_target("discord")
 def test_discord_live_manual_inbound_e2e(smoke_config: SmokeConfig) -> None:
     if not smoke_config.interactive:
-        pytest.skip("missing_env: set PROXYCC_SMOKE_INTERACTIVE=1 for manual inbound smoke")
+        pytest.skip(
+            "missing_env: set PROXYCC_SMOKE_INTERACTIVE=1 for manual inbound smoke"
+        )
     pytest.skip(
         "manual product smoke: send the printed nonce to Discord and verify "
         "progress edits, final transcript, /stop, /clear, /stats, and voice note "

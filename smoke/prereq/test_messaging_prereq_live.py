@@ -25,7 +25,9 @@ def test_telegram_bot_api_permissions(smoke_config: SmokeConfig) -> None:
         smoke_config.settings.allowed_telegram_user_id or ""
     )
     if not chat_id:
-        pytest.skip("PROXYCC_SMOKE_TELEGRAM_CHAT_ID or ALLOWED_TELEGRAM_USER_ID required")
+        pytest.skip(
+            "PROXYCC_SMOKE_TELEGRAM_CHAT_ID or ALLOWED_TELEGRAM_USER_ID required"
+        )
 
     marker = f"FCC smoke {int(time.time())}"
     sent = httpx.post(
@@ -61,7 +63,9 @@ def test_discord_bot_api_permissions(smoke_config: SmokeConfig) -> None:
     if not token:
         pytest.skip("DISCORD_BOT_TOKEN is not configured")
     if not channel_id:
-        pytest.skip("PROXYCC_SMOKE_DISCORD_CHANNEL_ID or ALLOWED_DISCORD_CHANNELS required")
+        pytest.skip(
+            "PROXYCC_SMOKE_DISCORD_CHANNEL_ID or ALLOWED_DISCORD_CHANNELS required"
+        )
 
     headers = {"authorization": f"Bot {token}"}
     base_url = "https://discord.com/api/v10"
@@ -106,7 +110,9 @@ def test_interactive_inbound_messaging_requires_explicit_mode(
     smoke_config: SmokeConfig,
 ) -> None:
     if not smoke_config.interactive:
-        pytest.skip("set PROXYCC_SMOKE_INTERACTIVE=1 for manual inbound messaging checks")
+        pytest.skip(
+            "set PROXYCC_SMOKE_INTERACTIVE=1 for manual inbound messaging checks"
+        )
     pytest.skip(
         "manual inbound check: start the server, send a nonce from the real client, "
         "and verify threaded progress plus /stop, /clear, and /stats"
