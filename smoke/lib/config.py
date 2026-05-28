@@ -189,6 +189,10 @@ class SmokeConfig:
             return bool(self.settings.llamacpp_base_url.strip())
         if provider == "ollama":
             return bool(self.settings.ollama_base_url.strip())
+        if provider == "siliconflow":
+            return bool(self.settings.siliconflow_api_key.strip())
+        if provider == "fireworks":
+            return bool(self.settings.fireworks_api_key.strip())
         return False
 
 

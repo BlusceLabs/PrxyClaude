@@ -1,0 +1,82 @@
+[package]
+name = "pxyclaude"
+version = "2.0.0"
+description = "Middleware between Claude Code CLI (Anthropic API) and NVIDIA NIM"
+edition = "2021"
+authors = ["Claude Code Proxy Team"]
+license = "MIT"
+repository = "https://github.com/your-org/PxyClaude"
+readme = "README.md"
+
+[lib]
+name = "pxyclaude"
+path = "src/lib.rs"
+
+[[bin]]
+name = "pxyclaude"
+path = "src/bin/main.rs"
+
+[[bin]]
+name = "proxycc-init"
+path = "src/bin/init.rs"
+
+[dependencies]
+# Core HTTP framework
+axum = "0.7"
+axum-extra = { version = "0.9", features = ["typed-header"] }
+tokio = { version = "1.0", features = ["full"] }
+
+# JSON serialization and validation
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+validator = { version = "0.18", features = ["derive"] }
+
+# Async HTTP client
+reqwest = { version = "0.12", features = ["json", "stream", "socks"] }
+
+# Async traits
+async-trait = "0.1"
+async-stream = "0.3"
+
+# Configuration
+config = "0.14"
+toml = "0.8"
+clap = { version = "4.5", features = ["derive"] }
+dotenvy = "0.15"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Async runtime utilities
+tower = "0.5"
+tower-http = { version = "0.5", features = ["trace", "cors", "compression-br"] }
+futures = "0.3"
+tokio-stream = { version = "0.1", features = ["sync"] }
+
+# Text processing
+tokio-util = { version = "0.7", features = ["io", "compat"] }
+html5ever = "0.27"
+url = "2.5"
+urlencoding = "2.1"
+regex = "1.10"
+html-escape = "0.2.13"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.8", features = ["v4", "serde"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockall = "0.12"
+hyper = { version = "1.0", features = ["full"] }
+tower = "0.5"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
