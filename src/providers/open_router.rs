@@ -2,7 +2,6 @@ use async_trait::async_trait;
 use serde_json::Value;
 use std::collections::HashMap;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
-use tokio_stream::StreamExt;
 
 use super::traits::{Provider, ProviderError, ProviderStream};
 
@@ -10,13 +9,15 @@ use super::traits::{Provider, ProviderError, ProviderStream};
 pub struct OpenRouterProvider {
     api_key: Option<String>,
     base_url: String,
+    referer: Option<String>,
 }
 
 impl OpenRouterProvider {
-    pub fn new(api_key: Option<String>, base_url: String) -> Self {
+    pub fn new(api_key: Option<String>, base_url: String, referer: Option<String>) -> Self {
         Self {
             api_key,
             base_url,
+            referer,
         }
     }
     
@@ -27,7 +28,9 @@ impl OpenRouterProvider {
     fn build_request_headers(&self) -> HashMap<String, String> {
         let mut headers = HashMap::new();
         headers.insert("Content-Type".to_string(), "application/json".to_string());
-        headers.insert("HTTP-Referer".to_string(), "https://github.com/BlusceLabs/PxyClaude".to_string());
+        if let Some(referer) = &self.referer {
+            headers.insert("HTTP-Referer".to_string(), referer.clone());
+        }
         headers.insert("X-Title".to_string(), "PxyClaude".to_string());
         
         if let Some(api_key) = &self.api_key {
@@ -132,33 +135,7 @@ impl Provider for OpenRouterProvider {
             return Err(ProviderError::api(format!("HTTP {}: {}", status, error_text)));
         }
         
-        // Create a stream from the response
-        let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
-        tokio::spawn(async move {
-            let mut stream = response.bytes_stream();
-            while let Some(chunk_result) = stream.next().await {
-                match chunk_result {
-                    Ok(chunk) => {
-                        if let Ok(text) = String::from_utf8(chunk.to_vec()) {
-                            if let Ok(value) = serde_json::from_str(&text) {
-                                let _ = tx.send(value);
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        let _ = tx.send(serde_json::json!({
-                            "error": {
-                                "type": "stream_error",
-                                "message": e.to_string()
-                            }
-                        }));
-                        break;
-                    }
-                }
-            }
-        });
-        
-        Ok(ProviderStream::new(rx))
+        Ok(crate::core::anthropic::sse::parse_sse_response(response))
     }
     
     async fn list_models(&self) -> Result<Vec<String>, ProviderError> {

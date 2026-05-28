@@ -1,9 +1,0 @@
-/home/mantra/PxyClaude/target/debug/deps/compression_codecs-fc4b069c82a3eba2.d: /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/lib.rs /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/mod.rs /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/decoder.rs /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/encoder.rs /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/params.rs
-
-/home/mantra/PxyClaude/target/debug/deps/libcompression_codecs-fc4b069c82a3eba2.rmeta: /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/lib.rs /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/mod.rs /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/decoder.rs /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/encoder.rs /home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/params.rs
-
-/home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/lib.rs:
-/home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/mod.rs:
-/home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/decoder.rs:
-/home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/encoder.rs:
-/home/mantra/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-codecs-0.4.38/src/brotli/params.rs:

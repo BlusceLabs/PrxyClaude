@@ -1,5 +1,4 @@
 use serde_json::Value;
-use std::collections::HashMap;
 
 /// Extract text content from various content formats
 pub fn extract_text_from_content(content: &Value) -> String {
@@ -36,7 +35,7 @@ pub fn get_block_attr(content: &Value, attr: &str) -> Option<Value> {
 }
 
 /// Set a value if it's not None
-pub fn set_if_not_none<T>(map: &mut HashMap<String, Value>, key: &str, value: Option<T>)
+pub fn set_if_not_none<T>(map: &mut serde_json::Map<String, Value>, key: &str, value: Option<T>)
 where
     T: Into<Value>,
 {
@@ -48,5 +47,34 @@ where
 /// Append request ID to an error message
 pub fn append_request_id(error: &str, request_id: &str) -> String {
     format!("{} [request_id: {}]", error, request_id)
+}
+
+/// Extract text from a Message's ContentOrBlocks
+pub fn extract_text_from_message_content(
+    content: &crate::models::ContentOrBlocks,
+) -> String {
+    match content {
+        crate::models::ContentOrBlocks::String(s) => s.clone(),
+        crate::models::ContentOrBlocks::Blocks(blocks) => {
+            let mut parts = Vec::new();
+            for block in blocks {
+                match block {
+                    crate::models::ContentBlock::Text(t) => parts.push(t.text.clone()),
+                    _ => {}
+                }
+            }
+            parts.join("\n")
+        }
+    }
+}
+
+/// Extract text from SystemContentOrString
+pub fn extract_text_from_system_content(
+    content: &crate::models::SystemContentOrString,
+) -> String {
+    match content {
+        crate::models::SystemContentOrString::String(s) => s.clone(),
+        crate::models::SystemContentOrString::System(sys) => sys.text.clone(),
+    }
 }
 

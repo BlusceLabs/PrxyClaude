@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use futures::StreamExt;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -10,18 +9,20 @@ use super::traits::{Provider, ProviderError, ProviderStream};
 pub struct AnthropicProvider {
     api_key: Option<String>,
     beta_features: Vec<String>,
+    base_url: Option<String>,
 }
 
 impl AnthropicProvider {
-    pub fn new(api_key: Option<String>, beta_features: Vec<String>) -> Self {
+    pub fn new(api_key: Option<String>, beta_features: Vec<String>, base_url: Option<String>) -> Self {
         Self {
             api_key,
             beta_features,
+            base_url,
         }
     }
     
     fn build_request_url(&self) -> String {
-        "https://api.anthropic.com/v1/messages".to_string()
+        self.base_url.as_deref().unwrap_or("https://api.anthropic.com").to_string() + "/v1/messages"
     }
     
     fn build_request_headers(&self) -> HashMap<String, String> {
@@ -129,47 +130,12 @@ impl Provider for AnthropicProvider {
             return Err(ProviderError::api(format!("HTTP {}: {}", status, error_text)));
         }
         
-        // Create a stream from the response
-        let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
-        tokio::spawn(async move {
-            let mut stream = response.bytes_stream();
-            while let Some(chunk_result) = stream.next().await {
-                match chunk_result {
-                    Ok(chunk) => {
-                        if let Ok(text) = String::from_utf8(chunk.to_vec()) {
-                            // Parse SSE events
-                            for line in text.lines() {
-                                if line.starts_with("data: ") {
-                                    let json_str = &line[6..];
-                                    if json_str != "[DONE]" {
-                                        if let Ok(value) = serde_json::from_str(json_str) {
-                                            let _ = tx.send(value);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        let _ = tx.send(serde_json::json!({
-                            "type": "error",
-                            "error": {
-                                "type": "stream_error",
-                                "message": e.to_string()
-                            }
-                        }));
-                        break;
-                    }
-                }
-            }
-        });
-        
-        Ok(ProviderStream::new(rx))
+        Ok(crate::core::anthropic::sse::parse_sse_response(response))
     }
     
     async fn list_models(&self) -> Result<Vec<String>, ProviderError> {
         let client = reqwest::Client::new();
-        let url = "https://api.anthropic.com/v1/models".to_string();
+        let url = self.base_url.as_deref().unwrap_or("https://api.anthropic.com").to_string() + "/v1/models";
         let headers = self.build_request_headers();
         
         let response = client
@@ -204,7 +170,7 @@ impl Provider for AnthropicProvider {
     
     async fn count_tokens(&self, request: &crate::models::MessagesRequest) -> Result<HashMap<String, i32>, ProviderError> {
         let client = reqwest::Client::new();
-        let url = "https://api.anthropic.com/v1/messages/count_tokens".to_string();
+        let url = self.base_url.as_deref().unwrap_or("https://api.anthropic.com").to_string() + "/v1/messages/count_tokens";
         let headers = self.build_request_headers();
         
         let token_request = TokenCountRequest {

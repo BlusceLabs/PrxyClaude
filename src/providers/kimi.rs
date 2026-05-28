@@ -7,15 +7,16 @@ use super::traits::{Provider, ProviderError, ProviderStream};
 /// Kimi provider implementation
 pub struct KimiProvider {
     api_key: Option<String>,
+    base_url: Option<String>,
 }
 
 impl KimiProvider {
-    pub fn new(api_key: Option<String>) -> Self {
-        Self { api_key }
+    pub fn new(api_key: Option<String>, base_url: Option<String>) -> Self {
+        Self { api_key, base_url }
     }
     
     fn build_request_url(&self) -> String {
-        "https://api.moonshot.cn/v1/chat/completions".to_string()
+        self.base_url.as_deref().unwrap_or("https://api.moonshot.cn").to_string() + "/v1/chat/completions"
     }
     
     fn build_request_headers(&self) -> HashMap<String, String> {
@@ -86,9 +87,41 @@ impl Provider for KimiProvider {
     
     async fn create_streaming_chat_completion(
         &self,
-        _request: &crate::models::MessagesRequest,
+        request: &crate::models::MessagesRequest,
     ) -> Result<ProviderStream, ProviderError> {
-        Err(ProviderError::invalid_request("Provider not configured"))
+        if !self.is_configured() {
+            return Err(ProviderError::invalid_request("Provider not configured"));
+        }
+        let client = reqwest::Client::new();
+        let url = self.build_request_url();
+        let headers = self.build_request_headers();
+        let mut openai_request = self.convert_to_openai_format(request)?;
+        openai_request
+            .as_object_mut()
+            .unwrap()
+            .insert("stream".to_string(), Value::Bool(true));
+        let response = client
+            .post(&url)
+            .headers({
+                let mut hdrs = HeaderMap::new();
+                for (key, value) in headers {
+                    hdrs.insert(
+                        HeaderName::from_bytes(key.as_bytes()).unwrap(),
+                        HeaderValue::from_str(&value).unwrap(),
+                    );
+                }
+                hdrs
+            })
+            .json(&openai_request)
+            .send()
+            .await
+            .map_err(|e| ProviderError::network(e.to_string()))?;
+        if !response.status().is_success() {
+            let status = response.status();
+            let error_text = response.text().await.unwrap_or_default();
+            return Err(ProviderError::api(format!("HTTP {}: {}", status, error_text)));
+        }
+        Ok(crate::core::anthropic::sse::parse_sse_response(response))
     }
     
     async fn list_models(&self) -> Result<Vec<String>, ProviderError> {

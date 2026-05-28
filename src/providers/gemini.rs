@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use futures::StreamExt;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -123,31 +122,7 @@ impl Provider for GeminiProvider {
             let error_text = response.text().await.unwrap_or_default();
             return Err(ProviderError::api(format!("HTTP {}: {}", status, error_text)));
         }
-        let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
-        tokio::spawn(async move {
-            let mut stream = response.bytes_stream();
-            while let Some(chunk_result) = stream.next().await {
-                match chunk_result {
-                    Ok(chunk) => {
-                        if let Ok(text) = String::from_utf8(chunk.to_vec()) {
-                            if let Ok(value) = serde_json::from_str(&text) {
-                                let _ = tx.send(value);
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        let _ = tx.send(serde_json::json!({
-                            "error": {
-                                "type": "stream_error",
-                                "message": e.to_string()
-                            }
-                        }));
-                        break;
-                    }
-                }
-            }
-        });
-        Ok(ProviderStream::new(rx))
+        Ok(crate::core::anthropic::sse::parse_sse_response(response))
     }
 
     async fn list_models(&self) -> Result<Vec<String>, ProviderError> {

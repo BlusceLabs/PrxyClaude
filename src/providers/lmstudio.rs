@@ -84,9 +84,41 @@ impl Provider for LmstudioProvider {
     
     async fn create_streaming_chat_completion(
         &self,
-        _request: &crate::models::MessagesRequest,
+        request: &crate::models::MessagesRequest,
     ) -> Result<ProviderStream, ProviderError> {
-        Err(ProviderError::invalid_request("Streaming not configured"))
+        if !self.is_configured() {
+            return Err(ProviderError::invalid_request("Provider not configured"));
+        }
+        let client = reqwest::Client::new();
+        let url = self.build_request_url();
+        let headers = self.build_request_headers();
+        let mut openai_request = self.convert_to_openai_format(request)?;
+        openai_request
+            .as_object_mut()
+            .unwrap()
+            .insert("stream".to_string(), Value::Bool(true));
+        let response = client
+            .post(&url)
+            .headers({
+                let mut hdrs = HeaderMap::new();
+                for (key, value) in headers {
+                    hdrs.insert(
+                        HeaderName::from_bytes(key.as_bytes()).unwrap(),
+                        HeaderValue::from_str(&value).unwrap(),
+                    );
+                }
+                hdrs
+            })
+            .json(&openai_request)
+            .send()
+            .await
+            .map_err(|e| ProviderError::network(e.to_string()))?;
+        if !response.status().is_success() {
+            let status = response.status();
+            let error_text = response.text().await.unwrap_or_default();
+            return Err(ProviderError::api(format!("HTTP {}: {}", status, error_text)));
+        }
+        Ok(crate::core::anthropic::sse::parse_sse_response(response))
     }
     
     async fn list_models(&self) -> Result<Vec<String>, ProviderError> {
