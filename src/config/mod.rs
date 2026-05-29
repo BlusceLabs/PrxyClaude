@@ -5,11 +5,21 @@ pub mod provider_catalog;
 
 use serde::{Deserialize, Serialize};
 
+use std::collections::HashMap;
 use std::env;
 use std::path::PathBuf;
 use thiserror::Error;
 
 use self::nim::NimSettings;
+use self::provider_catalog::SUPPORTED_PROVIDER_IDS;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ConfiguredChatModelRef {
+    pub model_ref: String,
+    pub provider_id: String,
+    pub model_id: String,
+    pub sources: Vec<String>,
+}
 
 #[derive(Error, Debug)]
 pub enum ConfigError {
@@ -19,6 +29,29 @@ pub enum ConfigError {
     ParseError(String),
     #[error("Environment variable not found: {0}")]
     EnvVarNotFound(String),
+    #[error("Configuration validation failed: {0}")]
+    ValidationFailed(String),
+}
+
+/// Load .env files in priority order: home config first, then local .env.
+/// Later files override earlier ones. `PROXYCC_ENV_FILE` env var adds an extra file.
+fn load_dotenv_files() {
+    let mut files: Vec<PathBuf> = Vec::new();
+
+    if let Ok(home) = env::var("HOME") {
+        files.push(PathBuf::from(home).join(".config").join("PxyClaude").join(".env"));
+    }
+    files.push(PathBuf::from(".env"));
+
+    if let Ok(explicit) = env::var("PROXYCC_ENV_FILE") {
+        files.push(PathBuf::from(explicit));
+    }
+
+    for file in files {
+        if file.exists() {
+            let _ = dotenvy::from_path(&file);
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -342,7 +375,9 @@ impl Config {
         let mut config: Config =
             toml::from_str(&content).map_err(|e| ConfigError::ParseError(e.to_string()))?;
 
+        load_dotenv_files();
         config.load_env_vars();
+        config.validate()?;
 
         Ok(config)
     }
@@ -765,5 +800,409 @@ impl Config {
             "cloudflare_gateway" => self.providers.cloudflare_gateway.proxy.clone(),
             _ => None,
         }
+    }
+
+    /// Validate all configuration fields after env var loading.
+    pub fn validate(&self) -> Result<(), ConfigError> {
+        Self::validate_whisper_device(&self.voice.whisper_device)?;
+        Self::validate_messaging_platform(&self.messaging.platform)?;
+        Self::validate_model_format(self.providers.model.as_str())?;
+        Self::validate_ollama_base_url(self.providers.ollama.base_url.as_deref().unwrap_or("http://localhost:11434"))?;
+
+        if let Some(ref m) = self.providers.model_opus {
+            Self::validate_model_format(m)?;
+        }
+        if let Some(ref m) = self.providers.model_sonnet {
+            Self::validate_model_format(m)?;
+        }
+        if let Some(ref m) = self.providers.model_haiku {
+            Self::validate_model_format(m)?;
+        }
+
+        if self.voice.note_enabled
+            && self.voice.whisper_device == "nvidia_nim"
+            && self.providers.nvidia_nim.api_key.as_deref().unwrap_or("").trim().is_empty()
+        {
+            return Err(ConfigError::ValidationFailed(
+                "NVIDIA_NIM_API_KEY is required when WHISPER_DEVICE is 'nvidia_nim'. \
+                 Set it in your .env file."
+                    .to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+
+    fn validate_whisper_device(value: &str) -> Result<(), ConfigError> {
+        matches!(value, "cpu" | "cuda" | "nvidia_nim").then_some(()).ok_or_else(|| {
+            ConfigError::ValidationFailed(format!(
+                "whisper_device must be 'cpu', 'cuda', or 'nvidia_nim', got '{value}'"
+            ))
+        })
+    }
+
+    fn validate_messaging_platform(value: &str) -> Result<(), ConfigError> {
+        matches!(value, "telegram" | "discord" | "none").then_some(()).ok_or_else(|| {
+            ConfigError::ValidationFailed(format!(
+                "messaging_platform must be 'telegram', 'discord', or 'none', got '{value}'"
+            ))
+        })
+    }
+
+    fn validate_model_format(value: &str) -> Result<(), ConfigError> {
+        let provider = Self::parse_provider_type(value);
+        if !SUPPORTED_PROVIDER_IDS.contains(&provider) {
+            return Err(ConfigError::ValidationFailed(format!(
+                "Invalid provider: '{provider}'. Supported: {}",
+                SUPPORTED_PROVIDER_IDS.join(", ")
+            )));
+        }
+        Ok(())
+    }
+
+    fn validate_ollama_base_url(value: &str) -> Result<(), ConfigError> {
+        if value.trim_end_matches('/').ends_with("/v1") {
+            return Err(ConfigError::ValidationFailed(
+                "OLLAMA_BASE_URL must be the Ollama root URL for native Anthropic \
+                 messages, e.g. http://localhost:11434 (without /v1)."
+                    .to_string(),
+            ));
+        }
+        Ok(())
+    }
+
+    /// Extract provider type from a "provider/model" string.
+    pub fn parse_provider_type(model_string: &str) -> &str {
+        model_string.split('/').next().unwrap_or("")
+    }
+
+    /// Extract model name from a "provider/model" string.
+    pub fn parse_model_name(model_string: &str) -> &str {
+        model_string.splitn(2, '/').nth(1).unwrap_or("")
+    }
+
+    /// Get the provider type from the default model string.
+    pub fn provider_type(&self) -> &str {
+        Self::parse_provider_type(&self.providers.model)
+    }
+
+    /// Get the model name from the default model string.
+    pub fn model_name(&self) -> &str {
+        Self::parse_model_name(&self.providers.model)
+    }
+
+    /// Resolve a Claude model name to the configured provider/model string.
+    ///
+    /// Classifies the incoming Claude model (opus/sonnet/haiku) and
+    /// returns the model-specific override if configured, otherwise the fallback MODEL.
+    pub fn resolve_model(&self, claude_model_name: &str) -> &str {
+        let name_lower = claude_model_name.to_lowercase();
+        if name_lower.contains("opus") {
+            if let Some(ref m) = self.providers.model_opus {
+                return m;
+            }
+        }
+        if name_lower.contains("haiku") {
+            if let Some(ref m) = self.providers.model_haiku {
+                return m;
+            }
+        }
+        if name_lower.contains("sonnet") {
+            if let Some(ref m) = self.providers.model_sonnet {
+                return m;
+            }
+        }
+        &self.providers.model
+    }
+
+    /// Resolve whether thinking is enabled for an incoming Claude model name.
+    pub fn resolve_thinking(&self, claude_model_name: &str) -> bool {
+        let name_lower = claude_model_name.to_lowercase();
+        if name_lower.contains("opus") {
+            if let Some(v) = self.providers.enable_opus_thinking {
+                return v;
+            }
+        }
+        if name_lower.contains("haiku") {
+            if let Some(v) = self.providers.enable_haiku_thinking {
+                return v;
+            }
+        }
+        if name_lower.contains("sonnet") {
+            if let Some(v) = self.providers.enable_sonnet_thinking {
+                return v;
+            }
+        }
+        self.providers.enable_model_thinking
+    }
+
+    /// Return unique configured chat provider/model refs with source env keys.
+    pub fn configured_chat_model_refs(&self) -> Vec<ConfiguredChatModelRef> {
+        let model_opus_ref = self.providers.model_opus.as_deref();
+        let model_sonnet_ref = self.providers.model_sonnet.as_deref();
+        let model_haiku_ref = self.providers.model_haiku.as_deref();
+
+        let mut sources_by_ref: HashMap<String, Vec<String>> = HashMap::new();
+
+        let default_model = &self.providers.model;
+        let candidates: Vec<(&str, Option<&str>)> = vec![
+            ("MODEL", Some(default_model.as_str())),
+            ("MODEL_OPUS", model_opus_ref),
+            ("MODEL_SONNET", model_sonnet_ref),
+            ("MODEL_HAIKU", model_haiku_ref),
+        ];
+
+        for (source, model_opt) in candidates {
+            if let Some(model_ref) = model_opt {
+                sources_by_ref
+                    .entry(model_ref.to_string())
+                    .or_default()
+                    .push(source.to_string());
+            }
+        }
+
+        sources_by_ref
+            .into_iter()
+            .map(|(model_ref, sources)| {
+                let provider_id = Self::parse_provider_type(&model_ref).to_string();
+                let model_id = Self::parse_model_name(&model_ref).to_string();
+                ConfiguredChatModelRef {
+                    model_ref,
+                    provider_id,
+                    model_id,
+                    sources,
+                }
+            })
+            .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn default_test_config() -> Config {
+        Config::default()
+    }
+
+    #[test]
+    fn test_parse_provider_type() {
+        assert_eq!(Config::parse_provider_type("nvidia_nim/z-ai/glm4.7"), "nvidia_nim");
+        assert_eq!(Config::parse_provider_type("openai/gpt-4"), "openai");
+        assert_eq!(Config::parse_provider_type("anthropic/claude-3"), "anthropic");
+    }
+
+    #[test]
+    fn test_parse_model_name() {
+        assert_eq!(Config::parse_model_name("nvidia_nim/z-ai/glm4.7"), "z-ai/glm4.7");
+        assert_eq!(Config::parse_model_name("openai/gpt-4"), "gpt-4");
+        assert_eq!(Config::parse_model_name("anthropic/claude-3-opus"), "claude-3-opus");
+    }
+
+    #[test]
+    fn test_parse_model_name_no_slash() {
+        assert_eq!(Config::parse_model_name("no-slash"), "");
+    }
+
+    #[test]
+    fn test_resolve_model_default() {
+        let config = default_test_config();
+        assert_eq!(config.resolve_model("claude-3-opus"), "nvidia_nim/z-ai/glm4.7");
+        assert_eq!(config.resolve_model("claude-3-sonnet"), "nvidia_nim/z-ai/glm4.7");
+        assert_eq!(config.resolve_model("claude-3-haiku"), "nvidia_nim/z-ai/glm4.7");
+    }
+
+    #[test]
+    fn test_resolve_model_with_overrides() {
+        let mut config = default_test_config();
+        config.providers.model_opus = Some("openai/gpt-4".to_string());
+        config.providers.model_sonnet = Some("anthropic/claude-3-sonnet".to_string());
+        config.providers.model_haiku = Some("openai/gpt-3.5-turbo".to_string());
+
+        assert_eq!(config.resolve_model("claude-3-opus"), "openai/gpt-4");
+        assert_eq!(config.resolve_model("claude-3-sonnet"), "anthropic/claude-3-sonnet");
+        assert_eq!(config.resolve_model("claude-3-haiku"), "openai/gpt-3.5-turbo");
+    }
+
+    #[test]
+    fn test_resolve_model_case_insensitive() {
+        let mut config = default_test_config();
+        config.providers.model_opus = Some("openai/gpt-4".to_string());
+        assert_eq!(config.resolve_model("Claude-3-OPUS"), "openai/gpt-4");
+    }
+
+    #[test]
+    fn test_resolve_thinking_default() {
+        let config = default_test_config();
+        assert!(config.resolve_thinking("claude-3-opus"));
+        assert!(config.resolve_thinking("claude-3-sonnet"));
+        assert!(config.resolve_thinking("claude-3-haiku"));
+    }
+
+    #[test]
+    fn test_resolve_thinking_with_overrides() {
+        let mut config = default_test_config();
+        config.providers.enable_model_thinking = true;
+        config.providers.enable_opus_thinking = Some(false);
+        config.providers.enable_sonnet_thinking = Some(false);
+        config.providers.enable_haiku_thinking = Some(true);
+
+        assert!(!config.resolve_thinking("claude-3-opus"));
+        assert!(!config.resolve_thinking("claude-3-sonnet"));
+        assert!(config.resolve_thinking("claude-3-haiku"));
+    }
+
+    #[test]
+    fn test_resolve_thinking_fallback_to_global() {
+        let mut config = default_test_config();
+        config.providers.enable_model_thinking = false;
+        config.providers.enable_opus_thinking = None;
+        assert!(!config.resolve_thinking("claude-3-opus"));
+    }
+
+    #[test]
+    fn test_configured_chat_model_refs_default() {
+        let config = default_test_config();
+        let refs = config.configured_chat_model_refs();
+        assert_eq!(refs.len(), 1);
+        assert_eq!(refs[0].model_ref, "nvidia_nim/z-ai/glm4.7");
+        assert_eq!(refs[0].provider_id, "nvidia_nim");
+        assert_eq!(refs[0].model_id, "z-ai/glm4.7");
+        assert!(refs[0].sources.contains(&"MODEL".to_string()));
+    }
+
+    #[test]
+    fn test_configured_chat_model_refs_with_overrides() {
+        let mut config = default_test_config();
+        config.providers.model_opus = Some("openai/gpt-4".to_string());
+        config.providers.model_sonnet = Some("nvidia_nim/z-ai/glm4.7".to_string());
+
+        let refs = config.configured_chat_model_refs();
+        assert_eq!(refs.len(), 2);
+
+        let default_ref = refs.iter().find(|r| r.model_ref == "nvidia_nim/z-ai/glm4.7").unwrap();
+        assert!(default_ref.sources.contains(&"MODEL".to_string()));
+        assert!(default_ref.sources.contains(&"MODEL_SONNET".to_string()));
+
+        let opus_ref = refs.iter().find(|r| r.model_ref == "openai/gpt-4").unwrap();
+        assert_eq!(opus_ref.provider_id, "openai");
+        assert_eq!(opus_ref.model_id, "gpt-4");
+        assert!(opus_ref.sources.contains(&"MODEL_OPUS".to_string()));
+    }
+
+    #[test]
+    fn test_configured_chat_model_refs_duplicate_model() {
+        let mut config = default_test_config();
+        config.providers.model_opus = Some("nvidia_nim/z-ai/glm4.7".to_string());
+
+        let refs = config.configured_chat_model_refs();
+        assert_eq!(refs.len(), 1);
+        assert!(refs[0].sources.contains(&"MODEL".to_string()));
+        assert!(refs[0].sources.contains(&"MODEL_OPUS".to_string()));
+    }
+
+    #[test]
+    fn test_provider_type() {
+        let config = default_test_config();
+        assert_eq!(config.provider_type(), "nvidia_nim");
+    }
+
+    #[test]
+    fn test_model_name() {
+        let config = default_test_config();
+        assert_eq!(config.model_name(), "z-ai/glm4.7");
+    }
+
+    #[test]
+    fn test_validate_whisper_device_valid() {
+        assert!(Config::validate_whisper_device("cpu").is_ok());
+        assert!(Config::validate_whisper_device("cuda").is_ok());
+        assert!(Config::validate_whisper_device("nvidia_nim").is_ok());
+    }
+
+    #[test]
+    fn test_validate_whisper_device_invalid() {
+        let result = Config::validate_whisper_device("gpu");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("whisper_device"));
+    }
+
+    #[test]
+    fn test_validate_messaging_platform_valid() {
+        assert!(Config::validate_messaging_platform("telegram").is_ok());
+        assert!(Config::validate_messaging_platform("discord").is_ok());
+        assert!(Config::validate_messaging_platform("none").is_ok());
+    }
+
+    #[test]
+    fn test_validate_messaging_platform_invalid() {
+        let result = Config::validate_messaging_platform("slack");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("messaging_platform"));
+    }
+
+    #[test]
+    fn test_validate_model_format_valid() {
+        assert!(Config::validate_model_format("nvidia_nim/z-ai/glm4.7").is_ok());
+        assert!(Config::validate_model_format("openai/gpt-4").is_ok());
+        assert!(Config::validate_model_format("anthropic/claude-3").is_ok());
+    }
+
+    #[test]
+    fn test_validate_model_format_invalid_provider() {
+        let result = Config::validate_model_format("invalid_provider/model");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("Invalid provider"));
+    }
+
+    #[test]
+    fn test_validate_ollama_base_url_valid() {
+        assert!(Config::validate_ollama_base_url("http://localhost:11434").is_ok());
+        assert!(Config::validate_ollama_base_url("http://myhost:11434").is_ok());
+    }
+
+    #[test]
+    fn test_validate_ollama_base_url_invalid() {
+        let result = Config::validate_ollama_base_url("http://localhost:11434/v1");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("OLLAMA_BASE_URL"));
+    }
+
+    #[test]
+    fn test_validate_ollama_base_url_trailing_slash() {
+        let result = Config::validate_ollama_base_url("http://localhost:11434/v1/");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_nvidia_nim_api_key_required() {
+        let mut config = default_test_config();
+        config.voice.note_enabled = true;
+        config.voice.whisper_device = "nvidia_nim".to_string();
+        config.providers.nvidia_nim.api_key = None;
+
+        let result = config.validate();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("NVIDIA_NIM_API_KEY"));
+    }
+
+    #[test]
+    fn test_validate_nvidia_nim_api_key_not_required_when_disabled() {
+        let mut config = default_test_config();
+        config.voice.note_enabled = false;
+        config.voice.whisper_device = "nvidia_nim".to_string();
+        config.providers.nvidia_nim.api_key = None;
+
+        assert!(config.validate().is_ok());
+    }
+
+    #[test]
+    fn test_validate_nvidia_nim_api_key_not_required_for_cpu() {
+        let mut config = default_test_config();
+        config.voice.note_enabled = true;
+        config.voice.whisper_device = "cpu".to_string();
+        config.providers.nvidia_nim.api_key = None;
+
+        assert!(config.validate().is_ok());
     }
 }

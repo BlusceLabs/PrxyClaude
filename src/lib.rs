@@ -8,6 +8,7 @@ pub mod api;
 pub mod cli;
 pub mod config;
 pub mod core;
+pub mod messaging;
 pub mod providers;
 
 pub use api::*;

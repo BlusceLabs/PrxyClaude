@@ -1,0 +1,22 @@
+pub mod command_dispatcher;
+pub mod commands;
+pub mod constants;
+pub mod event_parser;
+pub mod handler;
+pub mod limiter;
+pub mod models;
+pub mod node_event_pipeline;
+pub mod platforms;
+pub mod rendering;
+pub mod safe_diagnostics;
+pub mod session;
+pub mod transcript;
+pub mod transcription;
+pub mod trees;
+pub mod ui_updates;
+pub mod voice;
+
+pub use handler::ClaudeMessageHandler;
+pub use models::IncomingMessage;
+pub use session::SessionStore;
+pub use trees::queue_manager::TreeQueueManager;

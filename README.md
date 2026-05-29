@@ -1,37 +1,16 @@
 <div align="center">
 
-# 🤖 PxyClaude
+# PxyClaude
 
 Use Claude Code CLI, VS Code, JetBrains ACP, or chat bots through your own Anthropic-compatible proxy.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Python 3.14](https://img.shields.io/badge/python-3.14-3776ab.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json&style=for-the-badge)](https://github.com/astral-sh/uv)
-[![Tested with Pytest](https://img.shields.io/badge/testing-Pytest-00c0ff.svg?style=for-the-badge)](https://github.com/BlusceLabs/PxyClaude/actions/workflows/tests.yml)
-[![Type checking: Ty](https://img.shields.io/badge/type%20checking-ty-ffcc00.svg?style=for-the-badge)](https://pypi.org/project/ty/)
-[![Code style: Ruff](https://img.shields.io/badge/code%20formatting-ruff-f5a623.svg?style=for-the-badge)](https://github.com/astral-sh/ruff)
-[![Logging: Loguru](https://img.shields.io/badge/logging-loguru-4ecdc4.svg?style=for-the-badge)](https://github.com/Delgan/loguru)
+[![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 
 PxyClaude routes Anthropic Messages API traffic from Claude Code to OpenAI, Anthropic, NVIDIA NIM, OpenRouter, DeepSeek, z.ai, Kimi, Gemini, Cloudflare AI Gateway, LM Studio, llama.cpp, and Ollama. It keeps Claude Code's client-side protocol stable while letting you choose free, paid, or local models.
 
-[Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-claude-code) · [Troubleshooting](#troubleshooting) · [Development](#development)
+[Quick Start](#quick-start) | [Providers](#choose-a-provider) | [Clients](#connect-claude-code) | [Troubleshooting](#troubleshooting) | [Development](#development)
 
-</div>
-
-<div align="center">
-  <img src="pic.png" alt="PxyClaude in action" width="700">
-</div>
-
-## Star History
-
-<div align="center">
-  <a href="https://star-history.com/#BlusceLabs/PxyClaude&Date">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=BlusceLabs/PxyClaude&type=Date&theme=dark">
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=BlusceLabs/PxyClaude&type=Date">
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=BlusceLabs/PxyClaude&type=Date" width="700">
-    </picture>
-  </a>
 </div>
 
 ## What You Get
@@ -39,31 +18,18 @@ PxyClaude routes Anthropic Messages API traffic from Claude Code to OpenAI, Anth
 - Drop-in proxy for Claude Code's Anthropic API calls.
 - Twelve provider backends: OpenAI, Anthropic, NVIDIA NIM, OpenRouter, DeepSeek, z.ai, Kimi, Gemini, Cloudflare AI Gateway, LM Studio, llama.cpp, and Ollama.
 - Per-model routing: send Opus, Sonnet, Haiku, and fallback traffic to different providers.
-- Native Claude Code `/model` picker support through the proxy's `/v1/models` endpoint (Claude Code must opt in to Gateway model discovery; see [Model Picker](#model-picker)).
+- Native Claude Code `/model` picker support through the proxy's `/v1/models` endpoint.
 - Streaming, tool use, reasoning/thinking block handling, and local request optimizations.
-- Optional Discord or Telegram bot wrapper for remote coding sessions.
-- Optional voice-note transcription through local Whisper or NVIDIA NIM.
+- Built in Rust for high performance, low memory usage, and fast startup.
 
 ## Quick Start
 
-### 1. Install Requirements
+### 1. Install Rust
 
-Install [Claude Code](https://github.com/anthropics/claude-code), then install `uv` and Python 3.14.
-
-macOS/Linux:
+Install [Rust](https://www.rust-lang.org/tools/install) if not already installed:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv self update
-uv python install 3.14
-```
-
-Windows PowerShell:
-
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-uv self update
-uv python install 3.14
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 ### 2. Clone And Configure
@@ -84,36 +50,29 @@ ANTHROPIC_AUTH_TOKEN="proxycc"
 
 Use any local secret for `ANTHROPIC_AUTH_TOKEN`; Claude Code will send the same value back to this proxy. Leave it empty only for local/private testing.
 
-### 3. Start The Proxy
+### 3. Build And Start The Proxy
 
 ```bash
-uv run uvicorn server:app --host 0.0.0.0 --port 8082
+cargo build --release
+cargo run --release
 ```
 
-Package install alternative:
-
-```bash
-uv tool install git+https://github.com/BlusceLabs/PxyClaude.git
-proxycc-init
-PxyClaude
-```
-
-`proxycc-init` creates `~/.config/PxyClaude/.env` from the bundled template.
+The proxy starts on `http://localhost:8082` by default.
 
 ### 4. Run Claude Code
 
-Point `ANTHROPIC_BASE_URL` at the proxy root. Do not append `/v1`. Set `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` if you use `/model` to list models from this proxy (see [Model Picker](#model-picker)).
-
-PowerShell:
-
-```powershell
-$env:ANTHROPIC_AUTH_TOKEN="proxycc"; $env:ANTHROPIC_BASE_URL="http://localhost:8082"; $env:CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="1"; claude
-```
+Point `ANTHROPIC_BASE_URL` at the proxy root. Do not append `/v1`. Set `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` if you use `/model` to list models from this proxy.
 
 Bash:
 
 ```bash
 ANTHROPIC_AUTH_TOKEN="proxycc" ANTHROPIC_BASE_URL="http://localhost:8082" CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 claude
+```
+
+PowerShell:
+
+```powershell
+$env:ANTHROPIC_AUTH_TOKEN="proxycc"; $env:ANTHROPIC_BASE_URL="http://localhost:8082"; $env:CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="1"; claude
 ```
 
 ## Choose A Provider
@@ -128,22 +87,21 @@ provider_id/model/name
 
 | Provider | Prefix | Transport | Key | Default base URL |
 | --- | --- | --- | --- | --- |
-| <img src="https://cdn.simpleicons.org/nvidia/76B900" alt="" width="18" height="18"> NVIDIA NIM | `nvidia_nim/...` | OpenAI chat translation | `NVIDIA_NIM_API_KEY` | `https://integrate.api.nvidia.com/v1` |
-| <img src="https://cdn.simpleicons.org/openai" alt="" width="18" height="18"> OpenAI | `openai/...` | OpenAI chat translation | `OPENAI_API_KEY` | `https://api.openai.com/v1` |
-| <img src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-avatar/avatars/kimi.webp" alt="" width="18" height="18"> Kimi | `kimi/...` | OpenAI chat translation | `KIMI_API_KEY` | `https://api.moonshot.ai/v1` |
-| <img src="https://cdn.simpleicons.org/openrouter/6C47FF" alt="" width="18" height="18"> OpenRouter | `open_router/...` | Anthropic Messages | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` |
-| <img src="https://cdn.simpleicons.org/deepseek/4D6BFF" alt="" width="18" height="18"> DeepSeek | `deepseek/...` | Anthropic Messages | `DEEPSEEK_API_KEY` | `https://api.deepseek.com/anthropic` |
+| NVIDIA NIM | `nvidia_nim/...` | OpenAI chat translation | `NVIDIA_NIM_API_KEY` | `https://integrate.api.nvidia.com/v1` |
+| OpenAI | `openai/...` | OpenAI chat translation | `OPENAI_API_KEY` | `https://api.openai.com/v1` |
+| Kimi | `kimi/...` | OpenAI chat translation | `KIMI_API_KEY` | `https://api.moonshot.ai/v1` |
+| OpenRouter | `open_router/...` | Anthropic Messages | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` |
+| DeepSeek | `deepseek/...` | Anthropic Messages | `DEEPSEEK_API_KEY` | `https://api.deepseek.com/anthropic` |
 | z.ai | `z_ai/...` | OpenAI chat translation | `ZAI_API_KEY` | `https://api.z.ai/api/paas/v4` |
 | Cloudflare AI Gateway | `cloudflare_gateway/...` | Anthropic Messages | `CF_AIG_TOKEN` | `https://gateway.ai.cloudflare.com/v1/.../anthropic/v1` |
-| <img src="https://cdn.simpleicons.org/google" alt="" width="18" height="18"> Gemini | `gemini/...` | OpenAI chat translation | `GEMINI_API_KEY` | `https://generativelanguage.googleapis.com/v1beta/openai` |
-| <img src="https://github.com/anthropics.png?size=64" alt="" width="18" height="18"> Anthropic | `anthropic/...` | Anthropic Messages | `ANTHROPIC_API_KEY` | `https://api.anthropic.com/v1` |
-| <img src="https://github.com/lmstudio-ai.png?size=64" alt="" width="18" height="18"> LM Studio | `lmstudio/...` | Anthropic Messages | none | `http://localhost:1234/v1` |
-| <img src="https://github.com/ggml-org.png?size=64" alt="" width="18" height="18"> llama.cpp | `llamacpp/...` | Anthropic Messages | none | `http://localhost:8080/v1` |
-| <img src="https://github.com/ollama.png?size=64" alt="" width="18" height="18"> Ollama | `ollama/...` | Anthropic Messages | none | `http://localhost:11434` |
-
+| Gemini | `gemini/...` | OpenAI chat translation | `GEMINI_API_KEY` | `https://generativelanguage.googleapis.com/v1beta/openai` |
+| Anthropic | `anthropic/...` | Anthropic Messages | `ANTHROPIC_API_KEY` | `https://api.anthropic.com/v1` |
+| LM Studio | `lmstudio/...` | Anthropic Messages | none | `http://localhost:1234/v1` |
+| llama.cpp | `llamacpp/...` | Anthropic Messages | none | `http://localhost:8080/v1` |
+| Ollama | `ollama/...` | Anthropic Messages | none | `http://localhost:11434` |
 
 <details>
-<summary><img src="https://cdn.simpleicons.org/nvidia/76B900" alt="" width="18" height="18"> <b>NVIDIA NIM</b></summary>
+<summary><b>NVIDIA NIM</b></summary>
 
 Get a key at [build.nvidia.com/settings/api-keys](https://build.nvidia.com/settings/api-keys).
 
@@ -152,19 +110,12 @@ NVIDIA_NIM_API_KEY="nvapi-your-key"
 MODEL="nvidia_nim/z-ai/glm4.7"
 ```
 
-Popular examples:
-
-- `nvidia_nim/z-ai/glm4.7`
-- `nvidia_nim/z-ai/glm5`
-- `nvidia_nim/moonshotai/kimi-k2.5`
-- `nvidia_nim/minimaxai/minimax-m2.5`
-
 Browse models at [build.nvidia.com](https://build.nvidia.com/explore/discover).
 
 </details>
 
 <details>
-<summary><img src="https://cdn.simpleicons.org/openrouter/6C47FF" alt="" width="18" height="18"> <b>OpenRouter</b></summary>
+<summary><b>OpenRouter</b></summary>
 
 Get a key at [openrouter.ai/keys](https://openrouter.ai/keys).
 
@@ -178,7 +129,7 @@ Browse [all models](https://openrouter.ai/models) or [free models](https://openr
 </details>
 
 <details>
-<summary><img src="https://cdn.simpleicons.org/deepseek/4D6BFF" alt="" width="18" height="18"> <b>DeepSeek</b></summary>
+<summary><b>DeepSeek</b></summary>
 
 Get a key at [platform.deepseek.com/api_keys](https://platform.deepseek.com/api_keys).
 
@@ -187,12 +138,10 @@ DEEPSEEK_API_KEY="your-deepseek-key"
 MODEL="deepseek/deepseek-chat"
 ```
 
-This provider uses DeepSeek's Anthropic-compatible endpoint, not the OpenAI chat-completions endpoint.
-
 </details>
 
 <details>
-<summary><img src="https://github.com/lmstudio-ai.png?size=64" alt="" width="18" height="18"> <b>LM Studio</b></summary>
+<summary><b>LM Studio</b></summary>
 
 Start LM Studio's local server, load a model, then configure:
 
@@ -201,26 +150,22 @@ LM_STUDIO_BASE_URL="http://localhost:1234/v1"
 MODEL="lmstudio/your-loaded-model"
 ```
 
-Use the model identifier shown by LM Studio. Prefer models with tool-use support for Claude Code workflows.
-
 </details>
 
 <details>
-<summary><img src="https://github.com/ggml-org.png?size=64" alt="" width="18" height="18"> <b>llama.cpp</b></summary>
+<summary><b>llama.cpp</b></summary>
 
-Start `llama-server` with an Anthropic-compatible `/v1/messages` endpoint and enough context for Claude Code requests.
+Start `llama-server` with an Anthropic-compatible `/v1/messages` endpoint:
 
 ```dotenv
 LLAMACPP_BASE_URL="http://localhost:8080/v1"
 MODEL="llamacpp/local-model"
 ```
 
-For local coding models, context size matters. If llama.cpp returns HTTP 400 for normal Claude Code requests, increase `--ctx-size` and verify the model/server build supports the requested features.
-
 </details>
 
 <details>
-<summary><img src="https://github.com/ollama.png?size=64" alt="" width="18" height="18"> <b>Ollama</b></summary>
+<summary><b>Ollama</b></summary>
 
 Run Ollama and pull a model:
 
@@ -229,19 +174,15 @@ ollama pull llama3.1
 ollama serve
 ```
 
-Then configure the proxy. `OLLAMA_BASE_URL` is the Ollama server root; do not append `/v1`.
-
 ```dotenv
 OLLAMA_BASE_URL="http://localhost:11434"
 MODEL="ollama/llama3.1"
 ```
 
-Use the same tag shown by `ollama list`, for example `ollama/llama3.1:8b`.
-
 </details>
 
 <details>
-<summary><img src="https://cdn.simpleicons.org/openai" alt="" width="18" height="18"> <b>OpenAI</b></summary>
+<summary><b>OpenAI</b></summary>
 
 Get a key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 
@@ -250,17 +191,10 @@ OPENAI_API_KEY="sk-your-key"
 MODEL="openai/gpt-4o"
 ```
 
-OpenAI models use the native chat completions endpoint. Popular choices:
-
-- `openai/gpt-4o`
-- `openai/gpt-4o-mini`
-- `openai/o3-mini`
-- `openai/gpt-4.1`
-
 </details>
 
 <details>
-<summary><img src="https://github.com/anthropics.png?size=64" alt="" width="18" height="18"> <b>Anthropic Direct</b></summary>
+<summary><b>Anthropic Direct</b></summary>
 
 Get a key at [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys).
 
@@ -268,8 +202,6 @@ Get a key at [console.anthropic.com/settings/keys](https://console.anthropic.com
 ANTHROPIC_API_KEY="sk-ant-your-key"
 MODEL="anthropic/claude-sonnet-4-20250514"
 ```
-
-Routes directly to Anthropic's Messages API. Useful for testing or when you want Claude Code to use the official Anthropic endpoint through the same proxy interface.
 
 </details>
 
@@ -283,14 +215,10 @@ ZAI_API_KEY="your-zai-key"
 MODEL="z_ai/glm-4.7-flash"
 ```
 
-z.ai offers GLM series models through an OpenAI-compatible endpoint.
-
 </details>
 
 <details>
 <summary><b>Cloudflare AI Gateway</b></summary>
-
-Get a Cloudflare API token at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens). Requires AI Gateway - Read and AI Gateway - Edit permissions.
 
 ```dotenv
 CF_AIG_TOKEN="your-cf-token"
@@ -298,12 +226,10 @@ CF_GATEWAY_BASE_URL="https://gateway.ai.cloudflare.com/v1/ACCOUNT_ID/GATEWAY_NAM
 MODEL="cloudflare_gateway/claude-sonnet-4-20250514"
 ```
 
-Proxies Anthropic Messages API traffic through Cloudflare AI Gateway with caching, logging, and rate limiting.
-
 </details>
 
 <details>
-<summary><img src="https://cdn.simpleicons.org/google" alt="" width="18" height="18"> <b>Gemini</b></summary>
+<summary><b>Gemini</b></summary>
 
 Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 
@@ -311,8 +237,6 @@ Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 GEMINI_API_KEY="your-gemini-key"
 MODEL="gemini/gemini-2.5-flash"
 ```
-
-Uses Gemini's OpenAI-compatible chat completions endpoint.
 
 </details>
 
@@ -353,16 +277,12 @@ Open Settings, search for `claude-code.environmentVariables`, choose **Edit in s
 ]
 ```
 
-Reload the extension. If the extension shows a login screen, choose the Anthropic Console path once; the local proxy still handles model traffic after the environment variables are active.
-
 ### JetBrains ACP
 
 Edit the installed Claude ACP config:
 
 - Windows: `C:\Users\%USERNAME%\AppData\Roaming\JetBrains\acp-agents\installed.json`
 - Linux/macOS: `~/.jetbrains/acp.json`
-
-Set the environment for `acp.registry.claude-acp`:
 
 ```json
 "env": {
@@ -372,80 +292,13 @@ Set the environment for `acp.registry.claude-acp`:
 }
 ```
 
-Restart the IDE after changing the file.
-
 ### Model Picker
 
-Claude Code 2.1.126 or later can populate `/model` from this proxy's Gateway `/v1/models` response when `ANTHROPIC_BASE_URL` points here. In **2.1.126–2.1.128** that discovery was automatic; **newer releases** require **`CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`** in the same environment as `ANTHROPIC_*`. Omit the flag if you only set models via proxy config and never use `/model` discovery.
-
-Start Claude Code with that variable set (see [Quick Start](#4-run-claude-code)), run `/model`, and choose any discovered provider model.
-
-<div align="center">
-  <img src="cc-model-picker.png" alt="Claude Code model picker showing gateway models" width="700">
-</div>
-
-The proxy lists models for configured provider keys and referenced local providers. Picker-safe IDs are routed back to the real provider/model automatically, so no `.env` edit or separate launcher script is needed after startup.
-
-Each provider model also has a `(no thinking)` picker variant. Use it when a model does not support Claude Code thinking or fails with adaptive-thinking requests. It routes to the same upstream model while asking Claude Code to send a non-thinking request.
-
-## Optional Integrations
-
-### Discord And Telegram Bots
-
-The bot wrapper runs Claude Code sessions remotely, streams progress, supports reply-based conversation branches, and can stop or clear tasks.
-
-Discord minimum config:
-
-```dotenv
-MESSAGING_PLATFORM="discord"
-DISCORD_BOT_TOKEN="your-discord-bot-token"
-ALLOWED_DISCORD_CHANNELS="123456789"
-CLAUDE_WORKSPACE="./agent_workspace"
-ALLOWED_DIR="C:/Users/yourname/projects"
-```
-
-Create the bot in the [Discord Developer Portal](https://discord.com/developers/applications), enable Message Content Intent, and invite it with read/send/history permissions.
-
-Telegram minimum config:
-
-```dotenv
-MESSAGING_PLATFORM="telegram"
-TELEGRAM_BOT_TOKEN="123456789:ABC..."
-ALLOWED_TELEGRAM_USER_ID="your-user-id"
-CLAUDE_WORKSPACE="./agent_workspace"
-ALLOWED_DIR="C:/Users/yourname/projects"
-```
-
-Get a token from [@BotFather](https://t.me/BotFather) and your user ID from [@userinfobot](https://t.me/userinfobot).
-
-Useful commands:
-
-- `/stop` cancels a task; reply to a task message to stop only that branch.
-- `/clear` resets sessions; reply to clear one branch.
-- `/stats` shows session state.
-
-### Voice Notes
-
-Voice notes work on Discord and Telegram. Choose one backend:
-
-```bash
-uv sync --extra voice_local
-uv sync --extra voice
-uv sync --extra voice --extra voice_local
-```
-
-```dotenv
-VOICE_NOTE_ENABLED=true
-WHISPER_DEVICE="cpu"          # cpu | cuda | nvidia_nim
-WHISPER_MODEL="base"
-HF_TOKEN=""
-```
-
-Use `WHISPER_DEVICE="nvidia_nim"` with the `voice` extra and `NVIDIA_NIM_API_KEY` for NVIDIA-hosted transcription.
+Claude Code 2.1.126 or later can populate `/model` from this proxy's Gateway `/v1/models` response when `ANTHROPIC_BASE_URL` points here. Newer releases require `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`.
 
 ## Configuration Reference
 
-[`.env.example`](.env.example) is the canonical list of variables. The sections below are the ones most users change.
+[`.env.example`](.env.example) is the canonical list of variables.
 
 ### Model Routing
 
@@ -459,8 +312,6 @@ ENABLE_OPUS_THINKING=
 ENABLE_SONNET_THINKING=
 ENABLE_HAIKU_THINKING=
 ```
-
-Blank per-tier values inherit the fallback. Blank thinking overrides inherit `ENABLE_MODEL_THINKING`.
 
 ### Provider Keys And URLs
 
@@ -479,90 +330,29 @@ LLAMACPP_BASE_URL="http://localhost:8080/v1"
 OLLAMA_BASE_URL="http://localhost:11434"
 ```
 
-Proxy settings are per provider:
-
-```dotenv
-NVIDIA_NIM_PROXY=""
-OPENAI_PROXY=""
-ANTHROPIC_PROXY=""
-OPENROUTER_PROXY=""
-KIMI_PROXY=""
-ZAI_PROXY=""
-CF_GATEWAY_PROXY=""
-GEMINI_PROXY=""
-LMSTUDIO_PROXY=""
-LLAMACPP_PROXY=""
-```
-
-### Rate Limits And Timeouts
-
-```dotenv
-PROVIDER_RATE_LIMIT=60
-PROVIDER_RATE_WINDOW=30
-PROVIDER_MAX_CONCURRENCY=10
-HTTP_READ_TIMEOUT=60
-HTTP_WRITE_TIMEOUT=15
-HTTP_CONNECT_TIMEOUT=15
-```
-
-Use lower limits for free hosted providers; local providers can usually tolerate higher concurrency if the machine can handle it.
-
-### Security And Diagnostics
+### Security
 
 ```dotenv
 ANTHROPIC_AUTH_TOKEN=
-LOG_RAW_API_PAYLOADS=false
-LOG_RAW_SSE_EVENTS=false
-LOG_API_ERROR_TRACEBACKS=false
-LOG_RAW_MESSAGING_CONTENT=false
-LOG_RAW_CLI_DIAGNOSTICS=false
-LOG_MESSAGING_ERROR_DETAILS=false
 ```
-
-Raw logging flags can expose prompts, tool arguments, paths, and model output. Keep them off unless you are debugging locally.
-
-### Local Web Tools
-
-```dotenv
-ENABLE_WEB_SERVER_TOOLS=true
-WEB_FETCH_ALLOWED_SCHEMES=http,https
-WEB_FETCH_ALLOW_PRIVATE_NETWORKS=false
-```
-
-These tools perform outbound HTTP from the proxy. Keep private-network access disabled unless you are in a controlled lab environment.
 
 ## Troubleshooting
 
-### Claude Code says `undefined ... input_tokens`, `$.speed`, or malformed response
+### Claude Code says `undefined ... input_tokens`
 
-Update to the latest commit first. Older versions could emit invalid usage metadata in streaming responses. Then check:
-
+- Update to the latest version.
 - `ANTHROPIC_BASE_URL` is `http://localhost:8082`, not `http://localhost:8082/v1`.
 - The proxy is returning Server-Sent Events for `/v1/messages`.
-- `server.log` contains no upstream 400/500 response before the malformed-response error.
 
 ### llama.cpp or LM Studio returns HTTP 400
 
-This usually means the local runtime rejected the Anthropic Messages request before the proxy could stream a model answer.
-
-Check:
-
 - The local server supports `POST /v1/messages`.
-- The model and runtime support the requested context length and tools.
-- llama.cpp was started with enough `--ctx-size` for Claude Code prompts.
-- The configured base URL includes `/v1` for LM Studio and llama.cpp.
+- The model supports the requested context length and tools.
+- llama.cpp was started with enough `--ctx-size`.
 
 ### Provider disconnects during streaming
 
-Errors like `incomplete chunked read`, `server disconnected`, or a peer closing the body usually come from the upstream provider or gateway. Reduce concurrency, raise timeouts, or retry later.
-
-### Tool calls work on one model but not another
-
-Tool support is model and provider dependent. Some OpenAI-compatible models emit malformed tool-call deltas, omit tool names, or return tool calls as plain text. Try another model or provider before assuming the proxy is broken.
-
-### The VS Code extension still shows a login screen
-
-Confirm the extension environment variables are set, then reload the extension or restart VS Code. The browser login flow may still appear once; the local proxy is used when `ANTHROPIC_BASE_URL` is active in the extension process.
+Reduce concurrency, raise timeouts, or retry later.
 
 ## How It Works
 
@@ -571,7 +361,7 @@ Claude Code CLI / IDE
         |
         | Anthropic Messages API
         v
-Free Claude Code proxy (:8082)
+PxyClaude proxy (:8082)
         |
         | provider-specific request/stream adapter
         v
@@ -579,64 +369,56 @@ OpenAI / Anthropic / NVIDIA NIM / OpenRouter / DeepSeek / z.ai
 Kimi / Gemini / Cloudflare AI Gateway / LM Studio / llama.cpp / Ollama
 ```
 
-Important pieces:
-
-- FastAPI exposes Anthropic-compatible routes such as `/v1/messages`, `/v1/messages/count_tokens`, and `/v1/models`.
+- Axum exposes Anthropic-compatible routes: `/v1/messages`, `/v1/messages/count_tokens`, `/v1/models`.
 - Model routing resolves the Claude model name to `MODEL_OPUS`, `MODEL_SONNET`, `MODEL_HAIKU`, or `MODEL`.
 - **OpenAI-chat providers** (OpenAI, NVIDIA NIM, Kimi, z.ai, Gemini) use OpenAI chat streaming translated into Anthropic SSE.
 - **Native Anthropic providers** (Anthropic, OpenRouter, DeepSeek, Cloudflare AI Gateway, LM Studio, llama.cpp, Ollama) use Anthropic Messages style transports.
-- The proxy normalizes thinking blocks, tool calls, token usage metadata, and provider errors into the shape Claude Code expects.
-- Request optimizations answer trivial Claude Code probes locally to save latency and quota.
+- The proxy normalizes thinking blocks, tool calls, token usage metadata, and provider errors.
 
 ## Development
+
+### Prerequisites
+
+- [Rust 1.75+](https://www.rust-lang.org/tools/install)
 
 ### Project Structure
 
 ```text
-ProxyClaude/
-├── server.py              # ASGI entry point
-├── api/                   # FastAPI routes, service layer, routing, optimizations
-├── core/                  # Shared Anthropic protocol helpers and SSE utilities
-├── providers/             # Provider transports, registry, rate limiting
-├── messaging/             # Discord/Telegram adapters, sessions, voice
-├── cli/                   # Package entry points and Claude process management
-├── config/                # Settings, provider catalog, logging
-└── tests/                 # Unit and contract tests
+PxyClaude/
+├── src/
+│   ├── bin/                 # Binary entry points
+│   ├── api/                 # HTTP server, routes, middleware
+│   │   ├── server/          # Axum server, routes, gateway model IDs
+│   │   ├── web_tools/       # Web fetch, search, egress policy
+│   │   └── models/          # API data models
+│   ├── core/                # Shared Anthropic protocol helpers
+│   │   └── anthropic/       # SSE, conversion, thinking, tools, tokens
+│   ├── providers/           # Provider transports, registry, rate limiting
+│   └── cli/                 # CLI session and process management
+├── Cargo.toml               # Rust dependencies
+└── .env                     # Configuration
 ```
 
 ### Commands
 
 ```bash
-uv run ruff format
-uv run ruff check
-uv run ty check
-uv run pytest
+cargo check          # Type-check
+cargo test           # Run tests
+cargo build          # Debug build
+cargo build --release # Release build
 ```
 
-Run them in that order before pushing. CI enforces the same checks.
+### Adding Providers
 
-### Package Scripts
-
-`pyproject.toml` installs:
-
-- `ProxyClaude`: starts the proxy with configured host and port.
-- `proxycc-init`: creates the user config template at `~/.config/ProxyClaude/.env`.
-
-### Extending
-
-- Add OpenAI-compatible providers by extending `OpenAIChatTransport`.
-- Add Anthropic Messages providers by extending `AnthropicMessagesTransport`.
-- Register provider metadata in `config.provider_catalog` and factory wiring in `providers.registry`.
-- Add messaging platforms by implementing the `MessagingPlatform` interface in `messaging/`.
+1. Implement the `Provider` trait in `src/providers/`.
+2. Register in `src/providers/provider_catalog.rs` and `src/providers/registry.rs`.
+3. Add tests.
 
 ## Contributing
 
-- Report bugs and feature requests in [Issues](https://github.com/BlusceLabs/ProxyClaude/issues).
+- Report bugs and feature requests in [Issues](https://github.com/BlusceLabs/PxyClaude/issues).
 - Keep changes small and covered by focused tests.
-- Do not open Docker integration PRs.
-- Do not open README change PRs just open an issue for it.
-- Run the full check sequence before opening a pull request.
-- The syntax Except X, Y is brought back in python 3.14 final version (not in 3.14 alpha). Keep in mind before opening PRs.
+- Run `cargo check` and `cargo test` before opening a pull request.
 
 ## License
 

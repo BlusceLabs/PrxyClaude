@@ -1,68 +1,240 @@
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-use thiserror::Error;
-
-/// Thinking error types
-#[derive(Debug, Error)]
-pub enum ThinkingError {
-    #[error("Invalid thinking content: {0}")]
-    InvalidContent(String),
-    
-    #[error("Missing signature: {0}")]
-    MissingSignature(String),
-    
-    #[error("Invalid signature: {0}")]
-    InvalidSignature(String),
-}
-
-/// Content chunk for thinking
-#[derive(Debug, Clone)]
-pub struct ContentChunk {
-    pub content_type: ContentType,
-    pub text: String,
-    pub timestamp: DateTime<Utc>,
-}
-
-/// Content type enumeration
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ContentType {
     Text,
     Thinking,
-    ToolUse,
-    ToolResult,
 }
 
-/// Think tag parser for parsing thinking content
-pub struct ThinkTagParser;
+#[derive(Debug, Clone, PartialEq)]
+pub struct ContentChunk {
+    pub content_type: ContentType,
+    pub content: String,
+}
+
+pub struct ThinkTagParser {
+    buffer: String,
+    in_think_tag: bool,
+}
 
 impl ThinkTagParser {
-    /// Parse thinking content from text
-    pub fn parse_thinking(text: &str) -> Vec<ContentChunk> {
+    const OPEN_TAG: &'static str = "<thinking>";
+    const CLOSE_TAG: &'static str = "</thinking>";
+
+    pub fn new() -> Self {
+        Self {
+            buffer: String::new(),
+            in_think_tag: false,
+        }
+    }
+
+    pub fn in_think_mode(&self) -> bool {
+        self.in_think_tag
+    }
+
+    pub fn feed(&mut self, content: &str) -> Vec<ContentChunk> {
+        self.buffer.push_str(content);
         let mut chunks = Vec::new();
-        
-        // Simple implementation - in practice this would be more sophisticated
-        if text.contains("<thinking>") {
-            if let Some(start) = text.find("<thinking>") {
-                if let Some(end) = text.find("</thinking>") {
-                    let thinking_content = &text[start + 10..end];
-                    chunks.push(ContentChunk {
-                        content_type: ContentType::Thinking,
-                        text: thinking_content.to_string(),
-                        timestamp: Utc::now(),
+
+        loop {
+            let prev_len = self.buffer.len();
+            let chunk = if !self.in_think_tag {
+                self.parse_outside_think()
+            } else {
+                self.parse_inside_think()
+            };
+
+            if let Some(c) = chunk {
+                chunks.push(c);
+            } else if self.buffer.len() == prev_len {
+                break;
+            }
+        }
+
+        chunks
+    }
+
+    fn parse_outside_think(&mut self) -> Option<ContentChunk> {
+        let think_start = self.buffer.find(Self::OPEN_TAG);
+        let orphan_close = self.buffer.find(Self::CLOSE_TAG);
+
+        if let Some(orphan_pos) = orphan_close {
+            if think_start.map_or(true, |tp| orphan_pos < tp) {
+                let pre_orphan = self.buffer[..orphan_pos].to_string();
+                self.buffer = self.buffer[orphan_pos + Self::CLOSE_TAG.len()..].to_string();
+                if !pre_orphan.is_empty() {
+                    return Some(ContentChunk {
+                        content_type: ContentType::Text,
+                        content: pre_orphan,
                     });
+                }
+                return None;
+            }
+        }
+
+        match think_start {
+            None => {
+                let last_bracket = self.buffer.rfind('<');
+                if let Some(pos) = last_bracket {
+                    let potential_tag = &self.buffer[pos..];
+                    let tag_len = potential_tag.len();
+                    if (tag_len < Self::OPEN_TAG.len()
+                        && Self::OPEN_TAG.starts_with(potential_tag))
+                        || (tag_len < Self::CLOSE_TAG.len()
+                            && Self::CLOSE_TAG.starts_with(potential_tag))
+                    {
+                        let emit = self.buffer[..pos].to_string();
+                        self.buffer = self.buffer[pos..].to_string();
+                        if !emit.is_empty() {
+                            return Some(ContentChunk {
+                                content_type: ContentType::Text,
+                                content: emit,
+                            });
+                        }
+                        return None;
+                    }
+                }
+
+                let emit = self.buffer.clone();
+                self.buffer.clear();
+                if !emit.is_empty() {
+                    Some(ContentChunk {
+                        content_type: ContentType::Text,
+                        content: emit,
+                    })
+                } else {
+                    None
+                }
+            }
+            Some(pos) => {
+                let pre_think = self.buffer[..pos].to_string();
+                self.buffer = self.buffer[pos + Self::OPEN_TAG.len()..].to_string();
+                self.in_think_tag = true;
+                if !pre_think.is_empty() {
+                    Some(ContentChunk {
+                        content_type: ContentType::Text,
+                        content: pre_think,
+                    })
+                } else {
+                    None
                 }
             }
         }
-        
-        // Add remaining text as regular content
-        if chunks.is_empty() {
-            chunks.push(ContentChunk {
-                content_type: ContentType::Text,
-                text: text.to_string(),
-                timestamp: Utc::now(),
-            });
+    }
+
+    fn parse_inside_think(&mut self) -> Option<ContentChunk> {
+        let think_end = self.buffer.find(Self::CLOSE_TAG);
+
+        match think_end {
+            None => {
+                let last_bracket = self.buffer.rfind('<');
+                if let Some(pos) = last_bracket {
+                    if self.buffer.len() - pos < Self::CLOSE_TAG.len() {
+                        let potential_tag = &self.buffer[pos..];
+                        if Self::CLOSE_TAG.starts_with(potential_tag) {
+                            let emit = self.buffer[..pos].to_string();
+                            self.buffer = self.buffer[pos..].to_string();
+                            if !emit.is_empty() {
+                                return Some(ContentChunk {
+                                    content_type: ContentType::Thinking,
+                                    content: emit,
+                                });
+                            }
+                            return None;
+                        }
+                    }
+                }
+
+                let emit = self.buffer.clone();
+                self.buffer.clear();
+                if !emit.is_empty() {
+                    Some(ContentChunk {
+                        content_type: ContentType::Thinking,
+                        content: emit,
+                    })
+                } else {
+                    None
+                }
+            }
+            Some(pos) => {
+                let thinking_content = self.buffer[..pos].to_string();
+                self.buffer = self.buffer[pos + Self::CLOSE_TAG.len()..].to_string();
+                self.in_think_tag = false;
+                if !thinking_content.is_empty() {
+                    Some(ContentChunk {
+                        content_type: ContentType::Thinking,
+                        content: thinking_content,
+                    })
+                } else {
+                    None
+                }
+            }
         }
-        
-        chunks
+    }
+
+    pub fn flush(&mut self) -> Option<ContentChunk> {
+        if !self.buffer.is_empty() {
+            let content = self.buffer.clone();
+            let chunk_type = if self.in_think_tag {
+                ContentType::Thinking
+            } else {
+                ContentType::Text
+            };
+            self.buffer.clear();
+            Some(ContentChunk {
+                content_type: chunk_type,
+                content,
+            })
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_basic_text() {
+        let mut parser = ThinkTagParser::new();
+        let chunks = parser.feed("hello world");
+        assert_eq!(chunks.len(), 1);
+        assert_eq!(chunks[0].content_type, ContentType::Text);
+        assert_eq!(chunks[0].content, "hello world");
+    }
+
+    #[test]
+    fn test_think_tags() {
+        let mut parser = ThinkTagParser::new();
+        let chunks = parser.feed("before<thinking>reasoning</thinking>after");
+        assert_eq!(chunks.len(), 3);
+        assert_eq!(chunks[0].content_type, ContentType::Text);
+        assert_eq!(chunks[0].content, "before");
+        assert_eq!(chunks[1].content_type, ContentType::Thinking);
+        assert_eq!(chunks[1].content, "reasoning");
+        assert_eq!(chunks[2].content_type, ContentType::Text);
+        assert_eq!(chunks[2].content, "after");
+    }
+
+    #[test]
+    fn test_partial_tag_across_chunks() {
+        let mut parser = ThinkTagParser::new();
+        let c1 = parser.feed("hello <thin");
+        let c2 = parser.feed("king>reasoning</thin");
+        let c3 = parser.feed("king>after");
+        assert!(c1.len() >= 1);
+        assert!(c2.len() >= 1);
+        assert!(c3.len() >= 1);
+    }
+
+    #[test]
+    fn test_flush() {
+        let mut parser = ThinkTagParser::new();
+        parser.feed("<thin");
+        let flushed = parser.flush();
+        assert!(flushed.is_some());
+        let chunk = flushed.unwrap();
+        assert_eq!(chunk.content, "<thin");
+        assert_eq!(chunk.content_type, ContentType::Text);
+        assert!(parser.flush().is_none());
     }
 }
