@@ -309,11 +309,11 @@ uv sync --extra voice --extra voice_local
 
 **Configuration:**
 
-| Variable             | Description                                                                 | Default |
-| -------------------- | --------------------------------------------------------------------------- | ------- |
-| `VOICE_NOTE_ENABLED` | Enable voice note handling                                                  | `true`  |
-| `WHISPER_DEVICE`     | `cpu` \| `cuda` \| `nvidia_nim`                                             | `cpu`   |
-| `WHISPER_MODEL`      | See supported models below                                                  | `base`  |
+| Variable             | Description                                                                 | Default                  |
+| -------------------- | --------------------------------------------------------------------------- | ------------------------ |
+| `VOICE_NOTE_ENABLED` | Enable voice note handling                                                  | `false`                  |
+| `WHISPER_DEVICE`     | `cpu` \| `cuda` \| `nvidia_nim`                                             | `nvidia_nim`             |
+| `WHISPER_MODEL`      | See supported models below                                                  | `openai/whisper-large-v3`|
 | `HF_TOKEN`           | Hugging Face token for faster model downloads (optional, for local Whisper) | —       |
 | `NVIDIA_NIM_API_KEY` | API key for NVIDIA NIM (required for `nvidia_nim` device)                   | —       |
 
@@ -398,10 +398,10 @@ Browse: [model.lmstudio.ai](https://model.lmstudio.ai)
 
 | Variable                          | Description                                                                        | Default                                           |
 | --------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `MODEL`                           | Fallback model (prefix format: `provider/model/name`; invalid prefix causes error) | `nvidia_nim/stepfun-ai/step-3.5-flash`            |
-| `MODEL_OPUS`                      | Model for Claude Opus requests (optional, falls back to `MODEL`)                   | `nvidia_nim/z-ai/glm4.7`                          |
-| `MODEL_SONNET`                    | Model for Claude Sonnet requests (optional, falls back to `MODEL`)                 | `open_router/arcee-ai/trinity-large-preview:free` |
-| `MODEL_HAIKU`                     | Model for Claude Haiku requests (optional, falls back to `MODEL`)                  | `open_router/stepfun/step-3.5-flash:free`         |
+| `MODEL`                           | Fallback model (prefix format: `provider/model/name`; invalid prefix causes error) | `nvidia_nim/z-ai/glm4.7`                           |
+| `MODEL_OPUS`                      | Model for Claude Opus requests (optional, falls back to `MODEL`)                   | `nvidia_nim/z-ai/glm4.7`                           |
+| `MODEL_SONNET`                    | Model for Claude Sonnet requests (optional, falls back to `MODEL`)                 | `nvidia_nim/z-ai/glm4.7`                           |
+| `MODEL_HAIKU`                     | Model for Claude Haiku requests (optional, falls back to `MODEL`)                  | `nvidia_nim/z-ai/glm4.7`                           |
 | `NVIDIA_NIM_API_KEY`              | NVIDIA API key (NIM provider)                                                      | required                                          |
 | `OPENROUTER_API_KEY`              | OpenRouter API key (OpenRouter provider)                                           | required                                          |
 | `LM_STUDIO_BASE_URL`              | LM Studio server URL                                                               | `http://localhost:1234/v1`                        |

@@ -45,6 +45,9 @@ class ContentBlock(BaseModel):
     input: Any | None = None
     tool_use_id: str | None = None
     content: str | list[ContentBlock] | None = None
+    source: dict[str, Any] | None = None
+    thinking: str | None = None
+    signature: str | None = None
 
 
 class SystemBlock(BaseModel):

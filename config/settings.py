@@ -6,7 +6,6 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from pydantic import Field
 from pydantic_settings import BaseSettings
 
 ENV_FILE = Path(os.getenv("PRXYCLAUDE_ENV", ".env"))
@@ -16,70 +15,62 @@ class Settings(BaseSettings):
     """All settings loaded from .env file."""
 
     # Server
-    host: str = Field(default="0.0.0.0", alias="HOST")
-    port: int = Field(default=8082, alias="PORT")
-    proxy_auth_token: str = Field(default="prxyclaude", alias="PROXY_AUTH_TOKEN")
-    admin_token: str = Field(default="admin-change-me", alias="ADMIN_TOKEN")
-    log_level: str = Field(default="info", alias="LOG_LEVEL")
+    host: str = "0.0.0.0"
+    port: int = 8082
+    proxy_auth_token: str = "prxyclaude"
+    admin_token: str = "admin-change-me"
+    log_level: str = "info"
 
     # API Keys
-    nvidia_nim_api_key: str = Field(default="", alias="NVIDIA_NIM_API_KEY")
-    openrouter_api_key: str = Field(default="", alias="OPENROUTER_API_KEY")
-    lm_studio_base_url: str = Field(default="", alias="LM_STUDIO_BASE_URL")
+    nvidia_nim_api_key: str = ""
+    openrouter_api_key: str = ""
+    lm_studio_base_url: str = ""
 
     # Model mappings: provider_type/model_name
-    model_opus: str = Field(default="nvidia_nim/z-ai/glm4.7", alias="MODEL_OPUS")
-    model_sonnet: str = Field(default="nvidia_nim/z-ai/glm4.7", alias="MODEL_SONNET")
-    model_haiku: str = Field(default="nvidia_nim/z-ai/glm4.7", alias="MODEL_HAIKU")
-    model: str = Field(default="nvidia_nim/z-ai/glm4.7", alias="MODEL")
+    model_opus: str = "nvidia_nim/z-ai/glm4.7"
+    model_sonnet: str = "nvidia_nim/z-ai/glm4.7"
+    model_haiku: str = "nvidia_nim/z-ai/glm4.7"
+    model: str = "nvidia_nim/z-ai/glm4.7"
 
     # Provider config
-    provider_rate_limit: int = Field(default=40, alias="PROVIDER_RATE_LIMIT")
-    provider_rate_window: int = Field(default=60, alias="PROVIDER_RATE_WINDOW")
-    provider_max_concurrency: int = Field(default=5, alias="PROVIDER_MAX_CONCURRENCY")
+    provider_rate_limit: int = 40
+    provider_rate_window: int = 60
+    provider_max_concurrency: int = 5
 
     # HTTP timeouts (seconds)
-    http_read_timeout: float = Field(default=120, alias="HTTP_READ_TIMEOUT")
-    http_write_timeout: float = Field(default=10, alias="HTTP_WRITE_TIMEOUT")
-    http_connect_timeout: float = Field(default=2, alias="HTTP_CONNECT_TIMEOUT")
+    http_read_timeout: float = 120
+    http_write_timeout: float = 10
+    http_connect_timeout: float = 2
 
     # Messaging
-    messaging_platform: str = Field(default="discord", alias="MESSAGING_PLATFORM")
-    messaging_rate_limit: int = Field(default=1, alias="MESSAGING_RATE_LIMIT")
-    messaging_rate_window: int = Field(default=1, alias="MESSAGING_RATE_WINDOW")
+    messaging_platform: str = "discord"
+    messaging_rate_limit: int = 1
+    messaging_rate_window: int = 1
 
     # Voice
-    voice_note_enabled: bool = Field(default=False, alias="VOICE_NOTE_ENABLED")
-    whisper_device: str = Field(default="nvidia_nim", alias="WHISPER_DEVICE")
-    whisper_model: str = Field(default="openai/whisper-large-v3", alias="WHISPER_MODEL")
-    hf_token: str = Field(default="", alias="HF_TOKEN")
+    voice_note_enabled: bool = False
+    whisper_device: str = "nvidia_nim"
+    whisper_model: str = "openai/whisper-large-v3"
+    hf_token: str = ""
 
     # Telegram
-    telegram_bot_token: str = Field(default="", alias="TELEGRAM_BOT_TOKEN")
-    allowed_telegram_user_id: str = Field(default="", alias="ALLOWED_TELEGRAM_USER_ID")
+    telegram_bot_token: str = ""
+    allowed_telegram_user_id: str = ""
 
     # Discord
-    discord_bot_token: str = Field(default="", alias="DISCORD_BOT_TOKEN")
-    allowed_discord_channels: str = Field(default="", alias="ALLOWED_DISCORD_CHANNELS")
+    discord_bot_token: str = ""
+    allowed_discord_channels: str = ""
 
     # Agent
-    claude_workspace: str = Field(default="./agent_workspace", alias="CLAUDE_WORKSPACE")
-    allowed_dir: str = Field(default="", alias="ALLOWED_DIR")
+    claude_workspace: str = "./agent_workspace"
+    allowed_dir: str = ""
 
     # Optimization settings
-    fast_prefix_detection: bool = Field(default=True, alias="FAST_PREFIX_DETECTION")
-    enable_network_probe_mock: bool = Field(
-        default=True, alias="ENABLE_NETWORK_PROBE_MOCK"
-    )
-    enable_title_generation_skip: bool = Field(
-        default=True, alias="ENABLE_TITLE_GENERATION_SKIP"
-    )
-    enable_suggestion_mode_skip: bool = Field(
-        default=True, alias="ENABLE_SUGGESTION_MODE_SKIP"
-    )
-    enable_filepath_extraction_mock: bool = Field(
-        default=True, alias="ENABLE_FILEPATH_EXTRACTION_MOCK"
-    )
+    fast_prefix_detection: bool = True
+    enable_network_probe_mock: bool = True
+    enable_title_generation_skip: bool = True
+    enable_suggestion_mode_skip: bool = True
+    enable_filepath_extraction_mock: bool = True
 
     @property
     def provider_type(self) -> str:

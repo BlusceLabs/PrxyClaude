@@ -10,6 +10,8 @@ import httpx
 from loguru import logger
 from openai import AsyncOpenAI
 
+from core.circuit_breaker import record_failure as cb_record_failure
+from core.circuit_breaker import record_success as cb_record_success
 from providers.base import BaseProvider, ProviderConfig
 from providers.common import (
     ContentType,
@@ -248,6 +250,7 @@ class OpenAICompatibleProvider(BaseProvider):
 
             except Exception as e:
                 logger.error("{}_ERROR:{} {}: {}", tag, req_tag, type(e).__name__, e)
+                cb_record_failure(tag)
                 mapped_e = map_error(e)
                 error_occurred = True
                 error_message = append_request_id(
@@ -330,5 +333,8 @@ class OpenAICompatibleProvider(BaseProvider):
                     provider_input,
                     provider_input - input_tokens,
                 )
+        if not error_occurred:
+            cb_record_success(tag)
+
         yield sse.message_delta(map_stop_reason(finish_reason), output_tokens)
         yield sse.message_stop()

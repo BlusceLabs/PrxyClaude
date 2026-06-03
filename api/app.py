@@ -16,7 +16,10 @@ from loguru import logger
 
 from api.dependencies import (
     get_provider_for_model,
+    is_provider_disabled,
+    resolve_model_mapping,
     resolve_target_model,
+    set_provider_enabled,
     stream_to_anthropic_response,
 )
 from api.request_utils import get_token_count
@@ -29,19 +32,74 @@ from core.queue import get_queue, queue_stats
 from core.rate_limiter import configure_rate_limiter, get_rate_limiter
 from core.subagent_control import intercept_subagent_calls
 from core.types import AnthropicMessage, AnthropicRequest
+from messaging.base import MessagingPlatform
 from providers.common.optimizer import intercept_request
 from providers.transform import detect_tier
+
+_messaging_platform: MessagingPlatform | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup/shutdown events."""
-    # Startup
     settings = get_settings()
     configure_rate_limiter(settings.provider_rate_limit, settings.provider_rate_window)
+
+    global _messaging_platform
+    platform_type = settings.messaging_platform
+
+    if platform_type == "discord" and settings.discord_bot_token:
+        from cli.session_manager import CLISessionManager
+        from messaging import SessionRouter
+        from messaging.discord import DiscordBot
+
+        session_manager = CLISessionManager(
+            workspace_path=settings.claude_workspace,
+            api_url=f"http://{settings.host}:{settings.port}",
+            allowed_dirs=[settings.allowed_dir] if settings.allowed_dir else None,
+        )
+        router = SessionRouter(
+            session_manager, f"http://{settings.host}:{settings.port}"
+        )
+
+        platform = DiscordBot(settings, router=router)
+        platform.on_message(
+            lambda chat_id, text, reply_to: router.handle_message(
+                platform, chat_id, text, reply_to
+            )
+        )
+        await platform.start()
+        _messaging_platform = platform
+        logger.info("[app] Discord bot started")
+
+    elif platform_type == "telegram" and settings.telegram_bot_token:
+        from cli.session_manager import CLISessionManager
+        from messaging import SessionRouter
+        from messaging.telegram import TelegramBot
+
+        session_manager = CLISessionManager(
+            workspace_path=settings.claude_workspace,
+            api_url=f"http://{settings.host}:{settings.port}",
+            allowed_dirs=[settings.allowed_dir] if settings.allowed_dir else None,
+        )
+        router = SessionRouter(
+            session_manager, f"http://{settings.host}:{settings.port}"
+        )
+
+        platform = TelegramBot(settings, router=router)
+        platform.on_message(
+            lambda chat_id, text, reply_to: router.handle_message(
+                platform, chat_id, text, reply_to
+            )
+        )
+        await platform.start()
+        _messaging_platform = platform
+        logger.info("[app] Telegram bot started")
+
     logger.info("[app] PrxyClaude started")
     yield
-    # Shutdown (if needed)
+    if _messaging_platform:
+        await _messaging_platform.stop()
     logger.info("[app] PrxyClaude shutting down")
 
 
@@ -189,6 +247,22 @@ def create_app() -> FastAPI:
                 },
             )
         rate_limiter.record_request(provider_type)
+
+        # ── Circuit Breaker ──
+        from core.circuit_breaker import can_proceed as circuit_can_proceed
+
+        provider_type_cb, _ = resolve_model_mapping(req.model)
+        if not circuit_can_proceed(provider_type_cb):
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "type": "error",
+                    "error": {
+                        "type": "overloaded_error",
+                        "message": f"Provider '{provider_type_cb}' circuit is open. Try again later.",
+                    },
+                },
+            )
 
         # ── Resolve Provider ──
         provider = get_provider_for_model(req.model)
@@ -365,6 +439,19 @@ def create_app() -> FastAPI:
             )
         rate_limiter.record_request(provider_type)
 
+        # ── Circuit Breaker ──
+        from core.circuit_breaker import can_proceed as circuit_can_proceed
+
+        if not circuit_can_proceed(provider_type):
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "error": {
+                        "message": f"Provider '{provider_type}' circuit is open. Try again later."
+                    }
+                },
+            )
+
         # ── Resolve Provider ──
         provider = get_provider_for_model(req.model)
         target_model = resolve_target_model(req.model)
@@ -505,7 +592,7 @@ def create_app() -> FastAPI:
                     "id": p,
                     "label": p,
                     "type": p,
-                    "enabled": True,
+                    "enabled": not is_provider_disabled(p),
                     "priority": i,
                     "keyCount": len(cfg.api_keys.get(p, [])),
                 }
@@ -538,10 +625,15 @@ def create_app() -> FastAPI:
 
     @app.post("/admin/api/provider/{provider_id}/enable")
     async def enable_provider(provider_id: str):
+        set_provider_enabled(provider_id, enabled=True)
+        reset_circuit(provider_id)
+        logger.info(f"[admin] Provider {provider_id} enabled")
         return {"ok": True, "message": f"Provider {provider_id} enabled"}
 
     @app.post("/admin/api/provider/{provider_id}/disable")
     async def disable_provider(provider_id: str):
+        set_provider_enabled(provider_id, enabled=False)
+        logger.info(f"[admin] Provider {provider_id} disabled")
         return {"ok": True, "message": f"Provider {provider_id} disabled"}
 
     @app.post("/admin/api/provider/{provider_id}/reset-circuit")

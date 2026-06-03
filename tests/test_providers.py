@@ -6,10 +6,11 @@ import asyncio
 import json
 import time
 
+import httpx
 import pytest
 
 from config.nim import NimSettings
-from config.settings import ModelMapping
+from config.settings import ModelMapping, Settings
 from core.cache import ResponseCache
 from core.metrics import GlobalMetrics, ProviderMetrics
 from core.rate_limiter import RateLimiter
@@ -35,6 +36,7 @@ from providers.common import (
     append_request_id,
     extract_thinking_from_text,
     get_user_facing_error_message,
+    map_error,
     map_stop_reason,
 )
 from providers.common.logging import (
@@ -1227,27 +1229,27 @@ class TestRequestQueue:
 
 class TestParseProviderType:
     def test_standard_format(self):
-        result = ModelMapping.parse_provider_type("nvidia_nim/my-model")
+        result = Settings.parse_provider_type("nvidia_nim/my-model")
         assert result == "nvidia_nim"
 
     def test_openrouter(self):
-        result = ModelMapping.parse_provider_type("open_router/openrouter/owl-alpha")
+        result = Settings.parse_provider_type("open_router/openrouter/owl-alpha")
         assert result == "open_router"
 
     def test_no_separator(self):
-        result = ModelMapping.parse_provider_type("my-model")
+        result = Settings.parse_provider_type("my-model")
         assert result == "nvidia_nim"
 
     def test_in_settings(self):
         from config.settings import Settings
 
-        s = Settings(model_opus="nvidia_nim/z-ai/glm4.7")
+        s = Settings(model="nvidia_nim/z-ai/glm4.7")
         assert s.provider_type == "nvidia_nim"
 
     def test_in_settings_openrouter(self):
         from config.settings import Settings
 
-        s = Settings(model_opus="open_router/openrouter/owl-alpha")
+        s = Settings(model="open_router/openrouter/owl-alpha")
         assert s.provider_type == "open_router"
 
 
@@ -1279,7 +1281,11 @@ class TestGetTokenCount:
         from api.request_utils import get_token_count
 
         msg = AnthropicMessage(role="user", content="Weather?")
-        tool = Tool(name="get_weather", description="Get weather", input_schema={"type": "object"})
+        tool = Tool(
+            name="get_weather",
+            description="Get weather",
+            input_schema={"type": "object"},
+        )
         tokens = get_token_count([msg], tools=[tool])
         assert tokens >= 1
 
@@ -1433,9 +1439,7 @@ class TestHasSubagentCalls:
         msgs = [
             {
                 "role": "assistant",
-                "content": [
-                    {"type": "tool_use", "name": "Task", "input": {}}
-                ],
+                "content": [{"type": "tool_use", "name": "Task", "input": {}}],
             }
         ]
         assert has_subagent_calls(msgs) is True
@@ -1458,10 +1462,8 @@ class TestHasSubagentCalls:
 
 class TestMapError:
     @staticmethod
-    def _make_response(status_code: int = 429) -> object:
+    def _make_response(status_code: int = 429) -> httpx.Response:
         """Create a minimal mock httpx Response for openai error construction."""
-        import httpx
-
         request = httpx.Request("POST", "https://api.example.com/v1/chat/completions")
         return httpx.Response(status_code=status_code, request=request)
 
@@ -1606,6 +1608,8 @@ class TestRuntimeConfig:
         from config.settings import RuntimeConfig, Settings
 
         s = Settings(
+            nvidia_nim_api_key="",
+            openrouter_api_key="",
             lm_studio_base_url="http://localhost:1234/v1",
             model="lmstudio/local-model",
         )

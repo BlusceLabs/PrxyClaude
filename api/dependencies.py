@@ -23,10 +23,29 @@ def get_settings() -> Settings:
 
 
 _provider_cache: dict[str, BaseProvider] = {}
+_disabled_providers: set[str] = set()
+
+
+def is_provider_disabled(provider_type: str) -> bool:
+    return provider_type in _disabled_providers
+
+
+def set_provider_enabled(provider_type: str, enabled: bool) -> None:
+    if enabled:
+        _disabled_providers.discard(provider_type)
+    else:
+        _disabled_providers.add(provider_type)
+
+
+def get_disabled_providers() -> set[str]:
+    return _disabled_providers.copy()
 
 
 def get_provider_for_type(provider_type: str) -> BaseProvider:
     """Get provider instance for the given type."""
+    if provider_type in _disabled_providers:
+        raise ValueError(f"Provider '{provider_type}' is disabled via admin")
+
     if provider_type in _provider_cache:
         return _provider_cache[provider_type]
 

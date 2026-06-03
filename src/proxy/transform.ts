@@ -10,7 +10,9 @@ import type {
   OpenAIMessage,
   ModelTier,
   ProviderConfig,
-} from "./types.js";
+  SystemBlock,
+  Tool,
+} from "../types.ts";
 
 // ─── Model tier detection ─────────────────────────────────────────────────────
 
@@ -55,41 +57,41 @@ export function anthropicToOpenAI(
     const systemText =
       typeof req.system === "string"
         ? req.system
-        : req.system.map((b) => b.text).join("\n");
+        : req.system.map((b: SystemBlock) => b.text).join("\n");
     messages.push({ role: "system", content: systemText });
   }
 
   // Conversation turns
   for (const msg of req.messages) {
     if (msg.role === "user" || msg.role === "assistant") {
-      const textContent = contentToString(msg.content);
+       const textContent = contentToString(msg.content as string | ContentBlock[]);
 
       // Handle tool use from assistant
       if (Array.isArray(msg.content)) {
-        const toolCalls = msg.content.filter((b) => b.type === "tool_use");
-        const texts = msg.content.filter((b) => b.type === "text");
+        const toolCalls = msg.content.filter((b: ContentBlock) => b.type === "tool_use");
+        const texts = msg.content.filter((b: ContentBlock) => b.type === "text");
 
-        if (toolCalls.length > 0 && msg.role === "assistant") {
-          messages.push({
-            role: "assistant",
-            content: texts.length > 0 ? contentToString(texts) : null,
-            tool_calls: toolCalls.map((b) => {
-              const tc = b as { type: "tool_use"; id: string; name: string; input: unknown };
-              return {
-                id: tc.id,
-                type: "function" as const,
-                function: {
-                  name: tc.name,
-                  arguments: JSON.stringify(tc.input),
-                },
-              };
-            }),
-          });
+         if (toolCalls.length > 0 && msg.role === "assistant") {
+           messages.push({
+             role: "assistant",
+             content: texts.length > 0 ? contentToString(texts) : null,
+             tool_calls: toolCalls.map((b: ContentBlock) => {
+               const tc = b as { type: "tool_use"; id: string; name: string; input: unknown };
+               return {
+                 id: tc.id,
+                 type: "function" as const,
+                 function: {
+                   name: tc.name,
+                   arguments: JSON.stringify(tc.input),
+                 },
+               };
+             }),
+           });
           continue;
         }
 
         // Handle tool results from user
-        const toolResults = msg.content.filter((b) => b.type === "tool_result");
+        const toolResults = msg.content.filter((b: ContentBlock) => b.type === "tool_result");
         if (toolResults.length > 0 && msg.role === "user") {
           for (const tr of toolResults) {
             const r = tr as { type: "tool_result"; tool_use_id: string; content: string | ContentBlock[] };
@@ -122,7 +124,7 @@ export function anthropicToOpenAI(
   if (req.top_p !== undefined) oaiReq.top_p = req.top_p;
 
   if (req.tools?.length) {
-    oaiReq.tools = req.tools.map((t) => ({
+    oaiReq.tools = req.tools.map((t: Tool) => ({
       type: "function" as const,
       function: {
         name: t.name,

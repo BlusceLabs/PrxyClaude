@@ -64,7 +64,8 @@ class RequestQueue:
 
         record_queued()
 
-        future = asyncio.get_event_loop().create_future()
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
         item = QueueItem(
             priority=priority,
             created_at=now,
