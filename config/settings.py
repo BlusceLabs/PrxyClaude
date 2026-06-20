@@ -120,6 +120,9 @@ class Settings(BaseSettings):
     # ==================== ModelScope (OpenAI-compatible) ====================
     modelscope_api_key: str = Field(default="", validation_alias="MODELSCOPE_API_KEY")
 
+    # ==================== BAI (OpenAI-compatible) ====================
+    bai_api_key: str = Field(default="", validation_alias="BAI_API_KEY")
+
     # ==================== Messaging Platform Selection ====================
     # Valid: "telegram" | "discord" | "none"
     messaging_platform: str = Field(
@@ -182,6 +185,7 @@ class Settings(BaseSettings):
     cerebras_proxy: str = Field(default="", validation_alias="CEREBRAS_PROXY")
     tokenrouter_proxy: str = Field(default="", validation_alias="TOKENROUTER_PROXY")
     modelscope_proxy: str = Field(default="", validation_alias="MODELSCOPE_PROXY")
+    bai_proxy: str = Field(default="", validation_alias="BAI_PROXY")
 
     # ==================== Provider Rate Limiting ====================
     provider_rate_limit: int = Field(default=40, validation_alias="PROVIDER_RATE_LIMIT")

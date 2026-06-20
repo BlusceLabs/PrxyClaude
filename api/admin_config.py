@@ -276,6 +276,18 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         ),
     ),
     ConfigFieldSpec(
+        "BAI_API_KEY",
+        "BAI API Key",
+        "providers",
+        "secret",
+        settings_attr="bai_api_key",
+        secret=True,
+        description=(
+            "BAI API key (OpenAI-compatible at api.b.ai/v1); "
+            "see BAI docs for available models."
+        ),
+    ),
+    ConfigFieldSpec(
         "LM_STUDIO_BASE_URL",
         "LM Studio Base URL",
         "providers",
@@ -446,6 +458,15 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "providers",
         "secret",
         settings_attr="modelscope_proxy",
+        secret=True,
+        advanced=True,
+    ),
+    ConfigFieldSpec(
+        "BAI_PROXY",
+        "BAI Proxy",
+        "providers",
+        "secret",
+        settings_attr="bai_proxy",
         secret=True,
         advanced=True,
     ),

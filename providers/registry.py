@@ -148,6 +148,12 @@ def _create_modelscope(config: ProviderConfig, _settings: Settings) -> BaseProvi
     return ModelScopeProvider(config)
 
 
+def _create_bai(config: ProviderConfig, _settings: Settings) -> BaseProvider:
+    from providers.bai import BaiProvider
+
+    return BaiProvider(config)
+
+
 PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "nvidia_nim": _create_nvidia_nim,
     "open_router": _create_open_router,
@@ -168,6 +174,7 @@ PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "ollama": _create_ollama,
     "tokenrouter": _create_tokenrouter,
     "modelscope": _create_modelscope,
+    "bai": _create_bai,
 }
 
 if set(PROVIDER_DESCRIPTORS) != set(SUPPORTED_PROVIDER_IDS) or set(

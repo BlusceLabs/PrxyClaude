@@ -24,6 +24,7 @@ _EXPECTED_PROVIDER_ORDER: tuple[str, ...] = (
     "ollama",
     "tokenrouter",
     "modelscope",
+    "bai",
 )
 
 

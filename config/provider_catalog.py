@@ -38,6 +38,7 @@ GROQ_DEFAULT_BASE = "https://api.groq.com/openai/v1"
 CEREBRAS_DEFAULT_BASE = "https://api.cerebras.ai/v1"
 TOKENROUTER_DEFAULT_BASE = "https://api.tokenrouter.com/v1"
 MODELSCOPE_DEFAULT_BASE = "https://api-inference.modelscope.ai/v1"
+BAI_DEFAULT_BASE = "https://api.b.ai/v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -264,6 +265,15 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         credential_attr="modelscope_api_key",
         default_base_url=MODELSCOPE_DEFAULT_BASE,
         proxy_attr="modelscope_proxy",
+        capabilities=("chat", "streaming", "tools", "thinking", "rate_limit"),
+    ),
+    "bai": ProviderDescriptor(
+        provider_id="bai",
+        transport_type="openai_chat",
+        credential_env="BAI_API_KEY",
+        credential_attr="bai_api_key",
+        default_base_url=BAI_DEFAULT_BASE,
+        proxy_attr="bai_proxy",
         capabilities=("chat", "streaming", "tools", "thinking", "rate_limit"),
     ),
 }
