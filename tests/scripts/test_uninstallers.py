@@ -20,11 +20,11 @@ def test_readme_uninstall_one_liners_use_raw_github_urls() -> None:
 
     assert (
         'curl -fsSL "https://raw.githubusercontent.com/'
-        'Alishahryar1/prxyclaude/main/scripts/uninstall.sh" | sh'
+        'BlusceLabs/PrxyClaude/main/scripts/uninstall.sh" | sh'
     ) in text
     assert (
         'irm "https://raw.githubusercontent.com/'
-        'Alishahryar1/prxyclaude/main/scripts/uninstall.ps1" | iex'
+        'BlusceLabs/PrxyClaude/main/scripts/uninstall.ps1" | iex'
     ) in text
     assert "blob/main/scripts/uninstall.sh?raw=1" not in text
     assert "blob/main/scripts/uninstall.ps1?raw=1" not in text
@@ -102,7 +102,7 @@ def test_uninstall_sh_removes_uv_tool_and_purges_prxy_home() -> None:
     assert "uv python uninstall" not in text
 
 
-def test_uninstall_sh_fails_when_fcc_commands_are_running() -> None:
+def test_uninstall_sh_fails_when_prxy_commands_are_running() -> None:
     text = _script_text("uninstall.sh")
     guard_body = _braced_body(text, "assert_no_prxy_processes_running()")
     main = text[text.index('parse_args "$@"') :]
@@ -127,8 +127,8 @@ def test_uninstall_sh_fails_when_fcc_commands_are_running() -> None:
 
 def test_uninstall_ps1_removes_uv_tool_and_purges_prxy_home() -> None:
     text = _script_text("uninstall.ps1")
-    tool_body = _braced_body(text, "function Uninstall-FreeClaudeCode")
-    purge_body = _braced_body(text, "function Purge-FccHome")
+    tool_body = _braced_body(text, "function Uninstall-PrxyClaude")
+    purge_body = _braced_body(text, "function Purge-PrxyHome")
 
     assert "Does not remove uv, Claude Code, Codex" in text
     assert "uv tool uninstall" in tool_body
@@ -138,15 +138,15 @@ def test_uninstall_ps1_removes_uv_tool_and_purges_prxy_home() -> None:
     assert "aborting before deleting ~/.prxy." in tool_body
     assert "Remove-Item" in purge_body
     assert purge_body.count("Remove-Item -LiteralPath") == 1
-    assert '$FccHomeDirname = ".prxy"' in text
+    assert '$PrxyHomeDirname = ".prxy"' in text
     assert "npm uninstall" not in text
     assert "uv self uninstall" not in text
     assert "uv python uninstall" not in text
 
 
-def test_uninstall_ps1_fails_when_fcc_commands_are_running() -> None:
+def test_uninstall_ps1_fails_when_prxy_commands_are_running() -> None:
     text = _script_text("uninstall.ps1")
-    guard_body = _braced_body(text, "function Assert-NoFccProcessesRunning")
+    guard_body = _braced_body(text, "function Assert-NoPrxyProcessesRunning")
 
     for command in (
         "prxy-server",
@@ -157,12 +157,12 @@ def test_uninstall_ps1_fails_when_fcc_commands_are_running() -> None:
     ):
         assert command in text
 
-    assert "FccCommands" in text
+    assert "PrxyCommands" in text
 
     assert "PrxyClaude is still running" in guard_body
     assert (
         'Write-Step "Checking for running PrxyClaude processes"\n'
-        "Assert-NoFccProcessesRunning" in text
+        "Assert-NoPrxyProcessesRunning" in text
     )
 
 

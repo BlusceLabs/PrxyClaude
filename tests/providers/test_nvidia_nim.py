@@ -506,7 +506,7 @@ async def test_stream_response_restores_aliased_tool_arguments(nim_provider):
     )
     mock_chunk = _tool_call_chunk(
         name="Grep",
-        arguments=json.dumps({"pattern": "needle", "-A": 2, "_fcc_arg_type": "py"}),
+        arguments=json.dumps({"pattern": "needle", "-A": 2, "_prxy_arg_type": "py"}),
     )
 
     async def mock_stream():
@@ -526,13 +526,13 @@ async def test_stream_response_restores_aliased_tool_arguments(nim_provider):
     properties = create_kwargs["tools"][0]["function"]["parameters"]["properties"]
     assert "-A" in properties
     assert "type" not in properties
-    assert "_fcc_arg_A" not in properties
-    assert "_fcc_arg_type" in properties
+    assert "_prxy_arg_A" not in properties
+    assert "_prxy_arg_type" in properties
 
     deltas = _input_json_deltas(events)
     assert len(deltas) == 1
     assert json.loads(deltas[0]) == {"pattern": "needle", "-A": 2, "type": "py"}
-    assert "_fcc_arg_type" not in deltas[0]
+    assert "_prxy_arg_type" not in deltas[0]
 
 
 @pytest.mark.asyncio
@@ -561,7 +561,7 @@ async def test_stream_response_buffers_chunked_aliased_tool_arguments(nim_provid
     )
     second_chunk = _tool_call_chunk(
         name=None,
-        arguments='"_fcc_arg_type": "py"}',
+        arguments='"_prxy_arg_type": "py"}',
         tool_id="call_chunked",
     )
 
@@ -608,7 +608,7 @@ async def test_stream_response_restores_nested_aliased_tool_arguments(nim_provid
     mock_chunk = _tool_call_chunk(
         name="NotionLike",
         arguments=json.dumps(
-            {"parent": {"_fcc_arg_type": "page_id", "id": "page_123"}}
+            {"parent": {"_prxy_arg_type": "page_id", "id": "page_123"}}
         ),
     )
 
