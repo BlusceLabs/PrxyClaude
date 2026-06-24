@@ -123,6 +123,9 @@ class Settings(BaseSettings):
     # ==================== BAI (OpenAI-compatible) ====================
     bai_api_key: str = Field(default="", validation_alias="BAI_API_KEY")
 
+    # ==================== XiaoMiMiMo (OpenAI-compatible) ====================
+    xiaomimimo_api_key: str = Field(default="", validation_alias="XIAOMIMIMO_API_KEY")
+
     # ==================== Messaging Platform Selection ====================
     # Valid: "telegram" | "discord" | "none"
     messaging_platform: str = Field(
@@ -186,6 +189,7 @@ class Settings(BaseSettings):
     tokenrouter_proxy: str = Field(default="", validation_alias="TOKENROUTER_PROXY")
     modelscope_proxy: str = Field(default="", validation_alias="MODELSCOPE_PROXY")
     bai_proxy: str = Field(default="", validation_alias="BAI_PROXY")
+    xiaomimimo_proxy: str = Field(default="", validation_alias="XIAOMIMIMO_PROXY")
 
     # ==================== Provider Rate Limiting ====================
     provider_rate_limit: int = Field(default=40, validation_alias="PROVIDER_RATE_LIMIT")

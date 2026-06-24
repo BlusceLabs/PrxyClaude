@@ -154,6 +154,12 @@ def _create_bai(config: ProviderConfig, _settings: Settings) -> BaseProvider:
     return BaiProvider(config)
 
 
+def _create_xiaomimimo(config: ProviderConfig, _settings: Settings) -> BaseProvider:
+    from providers.xiaomimimo import XiaoMiMiMoProvider
+
+    return XiaoMiMiMoProvider(config)
+
+
 PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "nvidia_nim": _create_nvidia_nim,
     "open_router": _create_open_router,
@@ -175,6 +181,7 @@ PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
     "tokenrouter": _create_tokenrouter,
     "modelscope": _create_modelscope,
     "bai": _create_bai,
+    "xiaomimimo": _create_xiaomimimo,
 }
 
 if set(PROVIDER_DESCRIPTORS) != set(SUPPORTED_PROVIDER_IDS) or set(
