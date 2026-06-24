@@ -288,6 +288,18 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         ),
     ),
     ConfigFieldSpec(
+        "XIAOMIMIMO_API_KEY",
+        "XiaoMiMiMo API Key",
+        "providers",
+        "secret",
+        settings_attr="xiaomimimo_api_key",
+        secret=True,
+        description=(
+            "XiaoMiMiMo API key (OpenAI-compatible at token-plan-sgp.xiaomimimo.com); "
+            "see available models with /v1/models."
+        ),
+    ),
+    ConfigFieldSpec(
         "LM_STUDIO_BASE_URL",
         "LM Studio Base URL",
         "providers",
@@ -467,6 +479,15 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
         "providers",
         "secret",
         settings_attr="bai_proxy",
+        secret=True,
+        advanced=True,
+    ),
+    ConfigFieldSpec(
+        "XIAOMIMIMO_PROXY",
+        "XiaoMiMiMo Proxy",
+        "providers",
+        "secret",
+        settings_attr="xiaomimimo_proxy",
         secret=True,
         advanced=True,
     ),
@@ -969,6 +990,12 @@ FIELDS: tuple[ConfigFieldSpec, ...] = (
     ConfigFieldSpec(
         "PRXY_SMOKE_MODEL_MODELSCOPE",
         "Smoke ModelScope Model",
+        "smoke",
+        advanced=True,
+    ),
+    ConfigFieldSpec(
+        "PRXY_SMOKE_MODEL_XIAOMIMIMO",
+        "Smoke XiaoMiMiMo Model",
         "smoke",
         advanced=True,
     ),
