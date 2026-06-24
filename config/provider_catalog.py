@@ -40,7 +40,7 @@ TOKENROUTER_DEFAULT_BASE = "https://api.tokenrouter.com/v1"
 MODELSCOPE_DEFAULT_BASE = "https://api-inference.modelscope.ai/v1"
 BAI_DEFAULT_BASE = "https://api.b.ai/v1"
 # XiaoMiMiMo (OpenAI-compatible).
-XIAOMIMIMO_DEFAULT_BASE = "https://token-plan-sgp.xiaomimimo.com"
+XIAOMIMIMO_DEFAULT_BASE = "https://token-plan-sgp.xiaomimimo.com/v1"
 
 
 @dataclass(frozen=True, slots=True)
